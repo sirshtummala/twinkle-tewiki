@@ -2,6 +2,8 @@ import { getPref, Page, Api, PreferenceGroup, Preference, Config } from './core'
 import { addNs, makeTemplate, obj_entries, stripNs } from './utils';
 import { XfdCore, XfdMode } from './core';
 import { makeFindSourcesDiv, hatnoteRegex } from './common';
+import { getAfDDiscussionTitle, addAfDLatestAddition } from './tewiki-helpers';
+import { mapDestination, tewikiDeletionWorkflow } from './tewiki-config';
 
 class Afd extends XfdMode {
 	static venueCode = 'AfD';
@@ -11,7 +13,7 @@ class Afd extends XfdMode {
 		return mw.config.get('wgNamespaceNumber') === 0 && !Morebits.isPageRedirect();
 	}
 
-	discussionPagePrefix = 'Wikipedia:Articles for deletion';
+	discussionPagePrefix = tewikiDeletionWorkflow.afdDiscussionRoot;
 
 	getFieldsetLabel() {
 		return 'Articles for deletion';
@@ -599,44 +601,34 @@ class Afd extends XfdMode {
 	}
 
 	addToList() {
-		let params = this.params;
-
-		var date = new Morebits.date(params.articleLoadTime);
-		var pageobj = new Page(
-			'Wikipedia:Articles for deletion/Log/' + date.format('YYYY MMMM D', 'utc'),
-			"Adding discussion to today's list"
+		// TeWiki keeps AfD nominations on individual discussion pages and lists
+		// their links on the main AfD page; it does not use dated venue logs.
+		const pageobj = new Page(
+			mapDestination('Wikipedia:Articles for deletion'),
+			'Adding nomination to the latest additions list'
 		);
 		pageobj.setFollowRedirect(true);
 		return pageobj.load().then(() => {
-			var statelem = pageobj.getStatusElement();
-
-			var added_data = '{{subst:afd3|pg=' + Morebits.pageNameNorm + params.numbering + '}}\n';
-			var text;
-
-			// add date header if the log is found to be empty (a bot should do this automatically)
-			if (!pageobj.exists()) {
-				text = '{{subst:AfD log}}\n' + added_data;
-			} else {
-				var old_text = pageobj.getPageText() + '\n'; // MW strips trailing blanks, but we like them, so we add a fake one
-
-				text = old_text.replace(/(<!-- Add new entries to the TOP of the following list -->\n+)/, '$1' + added_data);
-				if (text === old_text) {
-					var linknode = document.createElement('a');
-					linknode.setAttribute('href', mw.util.getUrl('Wikipedia:Twinkle/Fixing AFD') + '?action=purge');
-					linknode.appendChild(document.createTextNode('How to fix AFD'));
-					statelem.error([
-						'Could not find the target spot for the discussion. To fix this problem, please see ',
-						linknode,
-						'.',
-					]);
-					return $.Deferred().reject();
-				}
+			const statelem = pageobj.getStatusElement();
+			const result = addAfDLatestAddition(pageobj.getPageText(), params.discussionpage);
+			if (!result.ok) {
+				statelem.error(
+					result.reason === 'anchor-missing'
+						? 'Could not find the latest-additions anchor on the Telugu AfD page; no list change was made.'
+						: result.reason === 'anchor-ambiguous'
+							? 'The latest-additions anchor is ambiguous on the Telugu AfD page; no list change was made.'
+							: 'Could not safely identify the end of the latest-additions section; no list change was made.'
+				);
+				return $.Deferred().reject();
 			}
-
-			pageobj.setPageText(text);
-			pageobj.setEditSummary('Adding [[:' + params.discussionpage + ']].');
+			if (result.alreadyPresent) {
+				statelem.info('This nomination is already listed; no duplicate was added.');
+				return $.Deferred().resolve();
+			}
+			pageobj.setPageText(result.text);
+			pageobj.setEditSummary('Adding [[:' + params.discussionpage + ']] to latest additions.');
 			pageobj.setWatchlist(getPref('xfdWatchList'));
-			pageobj.setCreateOption('recreate');
+			pageobj.setCreateOption('nocreate');
 			return pageobj.save();
 		});
 	}
