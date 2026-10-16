@@ -611,8 +611,10 @@ const translationSubgroups: tagSubgroup[] = ([
 			'Consider looking at [[WP:LRC]] for help. If listing the article at PNT, please try to avoid leaving this box blank, unless you are completely unsure.',
 	},
 ] as tagSubgroup[]).concat(
-	mw.config.get('wgNamespaceNumber') === 0
-		? [
+	// TeWiki's translation-list destination has not been confirmed; do not offer
+	// the Enwiki PNT list action until a local workflow is explicitly configured.
+	[]
+);
 				{
 					type: 'checkbox',
 					list: [
@@ -927,7 +929,7 @@ const articleTagList: tagListType = {
 		'Language': [
 			{
 				tag: 'Not English',
-				description: 'written in a language other than English and needs translation',
+				description: 'written in a language other than Telugu and needs translation into Telugu',
 				excludeInGroup: true,
 				subgroup: translationSubgroups
 					.slice(0, 1)
@@ -948,7 +950,7 @@ const articleTagList: tagListType = {
 			},
 			{
 				tag: 'Rough translation',
-				description: 'poor translation from another language',
+				description: 'poor translation into Telugu from another language',
 				excludeInGroup: true,
 				subgroup: translationSubgroups,
 			},
@@ -1312,12 +1314,6 @@ class ArticleMode extends TagMode {
 
 		params.tags.forEach((tag) => {
 			switch (tag) {
-				case 'Not English':
-				case 'Rough translation':
-					if (params.translationPostAtPNT) {
-						this.templateParams[tag].listed = 'yes';
-					}
-					break;
 				case 'Merge':
 				case 'Merge to':
 				case 'Merge from':
@@ -1536,57 +1532,6 @@ class ArticleMode extends TagMode {
 			);
 		}
 
-		// post at WP:PNT for {{not English}} and {{rough translation}} tag
-		if (params.translationPostAtPNT) {
-			var pntPage = new Page(
-				'Wikipedia:Pages needing translation into English',
-				'Listing article at Wikipedia:Pages needing translation into English'
-			);
-			pntPage.setFollowRedirect(true);
-			promises.push(
-				pntPage.load().then(function friendlytagCallbacksTranslationListPage() {
-					var old_text = pntPage.getPageText();
-
-					var template = params.tags.indexOf('Rough translation') !== -1 ? 'duflu' : 'needtrans';
-					var lang = params.translationLanguage;
-					var reason = params.translationComments;
-
-					var templateText =
-						'{{subst:' +
-						template +
-						'|pg=' +
-						Morebits.pageNameNorm +
-						'|Language=' +
-						(lang || 'uncertain') +
-						'|Comments=' +
-						reason.trim() +
-						'}} ~~~~';
-
-					var text, summary;
-					if (template === 'duflu') {
-						text = old_text + '\n\n' + templateText;
-						summary = 'Translation cleanup requested on ';
-					} else {
-						text = old_text.replace(
-							/\n+(==\s?Translated pages that could still use some cleanup\s?==)/,
-							'\n\n' + templateText + '\n\n$1'
-						);
-						summary = 'Translation' + (lang ? ' from ' + lang : '') + ' requested on ';
-					}
-
-					if (text === old_text) {
-						pntPage.getStatusElement().error('failed to find target spot for the discussion');
-						return;
-					}
-					pntPage.setPageText(text);
-					pntPage.setEditSummary(summary + ' [[:' + Morebits.pageNameNorm + ']]');
-					pntPage.setChangeTags(Twinkle.changeTags);
-					pntPage.setCreateOption('recreate');
-					return pntPage.save();
-				})
-			);
-		}
-
 		if (params.translationNotify) {
 			let statElem = new Morebits.status('Looking up creator');
 			pageobj.setStatusElement(statElem);
@@ -1612,7 +1557,7 @@ class ArticleMode extends TagMode {
 							(params.translationPostAtPNT ? '' : '|nopnt=yes') +
 							'}} ~~~~'
 					);
-					userTalkPage.setEditSummary('Notice: Please use English when contributing to the English Wikipedia.');
+					userTalkPage.setEditSummary('Notice about an article needing translation into Telugu.');
 					userTalkPage.setChangeTags(Twinkle.changeTags);
 					userTalkPage.setCreateOption('recreate');
 					userTalkPage.setFollowRedirect(true, false);
