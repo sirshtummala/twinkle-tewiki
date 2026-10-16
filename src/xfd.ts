@@ -1622,7 +1622,7 @@ class Mfd extends XfdMode {
 
 	addToList() {
 		let params = this.params;
-		let pageobj = new Page('Wikipedia:Miscellany for deletion', "Adding discussion to today's list");
+		let pageobj = new Page(mapDestination('Wikipedia:Miscellany for deletion'), "Adding discussion to today's list");
 		pageobj.setPageSection(2);
 		pageobj.setFollowRedirect(true);
 		return pageobj.load().then(() => {
