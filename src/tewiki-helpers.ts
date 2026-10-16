@@ -50,7 +50,6 @@ export function addAfDLatestAddition(
 	}
 
 	const anchorIndex = anchors[0].index!;
-	const lineStart = pageText.lastIndexOf('\n', anchorIndex) + 1;
 	const lineEndIndex = pageText.indexOf('\n', anchorIndex);
 	const anchorLineEnd = lineEndIndex === -1 ? pageText.length : lineEndIndex + 1;
 
