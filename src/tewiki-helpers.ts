@@ -91,7 +91,7 @@ export function addAfDLatestAddition(
 			bullet +
 			sectionText.slice(insertAt);
 	} else {
-		updatedSection = `\n${bullet}\n${sectionText.replace(/^\n+/, '')}`;
+		updatedSection = `${bullet}\n${sectionText.replace(/^\n+/, '')}`;
 	}
 
 	return {
