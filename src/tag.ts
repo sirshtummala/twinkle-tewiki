@@ -601,39 +601,15 @@ const fileTagList: tagListType = {
 });
 
 // Shared across {{Rough translation}} and {{Not English}}
-const translationSubgroups: tagSubgroup[] = ([
+const translationSubgroups: tagSubgroup[] = [
 	{
 		name: 'translationLanguage',
 		parameter: '1',
 		type: 'input',
 		label: 'Language of article (if known): ',
-		tooltip:
-			'Consider looking at [[WP:LRC]] for help. If listing the article at PNT, please try to avoid leaving this box blank, unless you are completely unsure.',
+		tooltip: 'Enter the source language if known; this field is optional.',
 	},
-] as tagSubgroup[]).concat(
-	// TeWiki's translation-list destination has not been confirmed; do not offer
-	// the Enwiki PNT list action until a local workflow is explicitly configured.
-	[]
-);
-				{
-					type: 'checkbox',
-					list: [
-						{
-							name: 'translationPostAtPNT',
-							label: 'List this article at Wikipedia:Pages needing translation into English (PNT)',
-							checked: true,
-						},
-					],
-				},
-				{
-					name: 'translationComments',
-					type: 'textarea',
-					label: 'Additional comments to post at PNT',
-					tooltip: 'Optional, and only relevant if "List this article ..." above is checked.',
-				},
-		  ]
-		: []
-);
+];
 
 // Subgroups for {{merge}}, {{merge-to}} and {{merge-from}}
 function getMergeSubgroups(tag: string): tagSubgroup[] {
