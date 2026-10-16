@@ -24,8 +24,9 @@ export function getAfDDiscussionTitle(articleTitle: string): string {
  * - Refuse to edit if the anchor is missing or appears more than once.
  * - Refuse if the section's end cannot be identified.
  * - Do not add a duplicate link.
- * - Place the link after the final bullet in the section, or immediately after
- *   the anchor line when no bullets exist.
+ * - Preserve the section's existing list marker (# or *).
+ * - Place the link after the final list item, or immediately after the anchor
+ *   line when no list items exist.
  * - Preserve the rest of the page text.
  *
  * This is a pure transformation. The caller is responsible for previewing,
@@ -74,13 +75,13 @@ export function addAfDLatestAddition(
 		return { ok: true, text: pageText, alreadyPresent: true };
 	}
 
-	const bulletPattern = /^[*#]+[^\n]*$/gm;
+	const bulletPattern = /^([*#]+)[^\n]*$/gm;
 	let lastBullet: RegExpExecArray | null = null;
 	let match: RegExpExecArray | null;
 	while ((match = bulletPattern.exec(sectionText)) !== null) {
 		lastBullet = match;
 	}
-	const bullet = `* ${link}`;
+	const bullet = `${lastBullet?.[1] ?? '#'} ${link}`;
 
 	let updatedSection: string;
 	if (lastBullet) {
