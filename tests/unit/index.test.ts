@@ -2,6 +2,7 @@ import {
 	addAfDLatestAddition,
 	getAfDDiscussionTitle,
 } from '../../src/tewiki-helpers';
+import { mapCategory, mapDestination, tewikiDeletionWorkflow } from '../../src/tewiki-config';
 
 describe('Tewiki AfD helpers', () => {
 	const discussion = 'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/ఉదాహరణ';
@@ -86,5 +87,23 @@ describe('Tewiki AfD helpers', () => {
 			ok: false,
 			reason: 'anchor-ambiguous',
 		});
+	});
+});
+
+
+describe('Tewiki configuration mappings', () => {
+	it('maps confirmed destinations and preserves unknown destinations', () => {
+		expect(mapDestination('Wikipedia:Articles for deletion')).toBe('వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు');
+		expect(mapDestination('Wikipedia:Requested moves/Technical requests')).toBe('Wikipedia:Requested moves/Technical requests');
+	});
+
+	it('maps confirmed categories and preserves unknown categories', () => {
+		expect(mapCategory('Category:Living people')).toBe('వర్గం:జీవిస్తున్న ప్రజలు');
+		expect(mapCategory('Category:Wikipedia books (user books)')).toBe('Category:Wikipedia books (user books)');
+	});
+
+	it('explicitly disables dated XfD venue logs', () => {
+		expect(tewikiDeletionWorkflow.createDatedXfdVenueLogs).toBe(false);
+		expect(tewikiDeletionWorkflow.translationTagRequiresEditorSelection).toBe(true);
 	});
 });
