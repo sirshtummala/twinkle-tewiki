@@ -87,7 +87,7 @@ describe('Telugu Wikipedia AfD helpers', () => {
 		const result = addAfDLatestAddition(input, 'Discussion');
 		expect(result.ok).toBe(true);
 		if (result.ok) {
-			expect(result.text).toContain('* [[Discussion]]');
+			expect(result.text).toContain('# [[Discussion]]');
 			expect(result.text).toContain('== Other section ==');
 		}
 	});
