@@ -40,7 +40,11 @@ export function addAfDLatestAddition(
 		`(?:\\{\\{\\s*anchor\\s*\\|\\s*${escapeRegExp(anchor)}\\s*(?:\\|[^}]+)?\\}\\}|id\\s*=\\s*["']?${escapeRegExp(anchor)}["']?)`,
 		'gi'
 	);
-	const anchors = [...pageText.matchAll(anchorPattern)];
+	const anchors: Array<{ index: number }> = [];
+	let anchorMatch: RegExpExecArray | null;
+	while ((anchorMatch = anchorPattern.exec(pageText)) !== null) {
+		anchors.push({ index: anchorMatch.index });
+	}
 
 	if (anchors.length === 0) {
 		return { ok: false, reason: 'anchor-missing' };
