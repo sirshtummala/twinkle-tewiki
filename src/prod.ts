@@ -306,7 +306,7 @@ export class Prod extends TwinkleModule {
 					var isMoreThan3DaysOld = new Morebits.date(params.creation)
 						.add(3, 'days')
 						.isAfter(new Date(pageobj.getLoadTime()));
-					var blpcheck_re = /\[\[Category:Living people\]\]/i;
+					var blpcheck_re = /\[\[(?:Category:Living people|వర్గం:జీవిస్తున్న ప్రజలు)(?:\|[^\]]*)?\]\]/i;
 					if (!blpcheck_re.test(text) && isMoreThan3DaysOld) {
 						if (
 							!confirm(
