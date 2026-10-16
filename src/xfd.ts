@@ -1512,7 +1512,7 @@ class Mfd extends XfdMode {
 		return 'Miscellany for deletion';
 	}
 
-	discussionPagePrefix = 'Wikipedia:Miscellany for deletion';
+	discussionPagePrefix = mapDestination('Wikipedia:Miscellany for deletion');
 
 	generateFieldset(): Morebits.quickForm.element {
 		this.fieldset = super.generateFieldset();
