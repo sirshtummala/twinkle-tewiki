@@ -66,7 +66,7 @@ describe('Telugu Wikipedia AfD helpers', () => {
 			'',
 			'==పాత చర్చలు ==',
 			'Keep this text unchanged.',
-		].join('\\n');
+		].join('\n');
 		const result = addAfDLatestAddition(
 			input,
 			'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/New article'
@@ -77,7 +77,7 @@ describe('Telugu Wikipedia AfD helpers', () => {
 			alreadyPresent: false,
 			text: input.replace(
 				'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Another article]]',
-				'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Another article]]\\n# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/New article]]'
+				'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Another article]]\n# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/New article]]'
 			),
 		});
 	});
