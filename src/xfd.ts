@@ -2,7 +2,7 @@ import { getPref, Page, Api, PreferenceGroup, Preference, Config } from './core'
 import { addNs, makeTemplate, obj_entries, stripNs } from './utils';
 import { XfdCore, XfdMode } from './core';
 import { makeFindSourcesDiv, hatnoteRegex } from './common';
-import { getAfDDiscussionTitle, addAfDLatestAddition } from './tewiki-helpers';
+import { addAfDLatestAddition } from './tewiki-helpers';
 import { mapDestination, tewikiDeletionWorkflow } from './tewiki-config';
 
 class Afd extends XfdMode {
@@ -601,6 +601,7 @@ class Afd extends XfdMode {
 	}
 
 	addToList() {
+		let params = this.params;
 		// TeWiki keeps AfD nominations on individual discussion pages and lists
 		// their links on the main AfD page; it does not use dated venue logs.
 		const pageobj = new Page(
