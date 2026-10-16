@@ -32,10 +32,10 @@ export class Speedy extends SpeedyCore {
 		) {
 			return 'CSD U1:  Please specify a rationale when nominating user talk pages.';
 		}
-		if (csd.has('repost') && input.repost_xfd && !/^(?:wp|wikipedia):/i.test(input.repost_xfd)) {
+		if (csd.has('repost') && input.repost_xfd && !/^(?:wp|wikipedia|వికీపీడియా):/i.test(input.repost_xfd)) {
 			return 'CSD G4:  The deletion discussion page name, if provided, must start with "Wikipedia:".';
 		}
-		if (csd.has('xfd') && input.xfd_fullvotepage && !/^(?:wp|wikipedia):/i.test(input.xfd_fullvotepage)) {
+		if (csd.has('xfd') && input.xfd_fullvotepage && !/^(?:wp|wikipedia|వికీపీడియా):/i.test(input.xfd_fullvotepage)) {
 			return 'CSD G6 (XFD):  The deletion discussion page name, if provided, must start with "Wikipedia:".';
 		}
 		if (csd.has('imgcopyvio') && !input.imgcopyvio_url && !input.imgcopyvio_rationale) {
