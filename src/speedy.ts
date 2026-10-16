@@ -263,7 +263,7 @@ export class Speedy extends SpeedyCore {
 					value: 'foreign',
 					code: 'a2',
 					tooltip:
-						'If the article in question does not exist on another project, the template {{notenglish}} should be used instead. All articles in a non-English language that do not meet this criteria (and do not meet any other criteria for speedy deletion) should be listed at Pages Needing Translation (PNT) for review and possible translation',
+						'If the article does not exist on another Wikimedia project, consider tagging it for translation into Telugu instead, unless another speedy-deletion criterion applies. Do not use this criterion merely because an article is written in a language other than Telugu.',
 					subgroup: {
 						name: 'foreign_source',
 						parameter: 'source',
