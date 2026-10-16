@@ -930,40 +930,18 @@ class Tfd extends XfdMode {
 	}
 
 	addToList() {
-		let params = this.params;
-
-		var pageobj = new Page(params.logpage, "Adding discussion to today's log");
-		pageobj.setFollowRedirect(true);
+		const params = this.params;
+		const pageobj = new Page(params.discussionpage, 'Creating template discussion page');
 		return pageobj.load().then(() => {
-			var statelem = pageobj.getStatusElement();
-
-			var added_data = this.getDiscussionWikitext();
-			var text;
-
-			// add date header if the log is found to be empty (a bot should do this automatically)
-			if (!pageobj.exists()) {
-				text = '{{subst:TfD log}}\n' + added_data;
-			} else {
-				var old_text = pageobj.getPageText();
-
-				text = old_text.replace('-->', '-->\n' + added_data);
-				if (text === old_text) {
-					statelem.error('failed to find target spot for the discussion');
-					return $.Deferred().reject();
-				}
+			const statelem = pageobj.getStatusElement();
+			if (pageobj.exists()) {
+				statelem.error('The discussion page already exists; no changes were made.');
+				return $.Deferred().reject();
 			}
-
-			pageobj.setPageText(text);
-			pageobj.setEditSummary(
-				'Adding ' +
-					(params.xfdcat === 'TfD' ? 'deletion nomination' : 'merge listing') +
-					' of [[:' +
-					Morebits.pageNameNorm +
-					']].'
-			);
-
+			pageobj.setPageText(this.getDiscussionWikitext());
+			pageobj.setEditSummary('Creating template discussion for [[:' + Morebits.pageNameNorm + ']].');
 			pageobj.setWatchlist(getPref('xfdWatchDiscussion'));
-			pageobj.setCreateOption('recreate');
+			pageobj.setCreateOption('createonly');
 			return pageobj.save();
 		});
 	}
@@ -1147,21 +1125,18 @@ class Ffd extends XfdMode {
 	}
 
 	addToList() {
-		let params = this.params;
-		var pageobj = new Page(params.logpage, "Adding discussion to today's list");
-		pageobj.setFollowRedirect(true);
+		const params = this.params;
+		const pageobj = new Page(params.discussionpage, 'Creating file discussion page');
 		return pageobj.load().then(() => {
-			var text = pageobj.getPageText();
-
-			// add date header if the log is found to be empty (a bot should do this automatically)
-			if (!pageobj.exists()) {
-				text = '{{subst:FfD log}}';
+			const statelem = pageobj.getStatusElement();
+			if (pageobj.exists()) {
+				statelem.error('The discussion page already exists; no changes were made.');
+				return $.Deferred().reject();
 			}
-
-			pageobj.setPageText(text + '\n\n' + this.getDiscussionWikitext());
-			pageobj.setEditSummary('Adding [[:' + Morebits.pageNameNorm + ']].');
+			pageobj.setPageText(this.getDiscussionWikitext());
+			pageobj.setEditSummary('Creating file discussion for [[:' + Morebits.pageNameNorm + ']].');
 			pageobj.setWatchlist(getPref('xfdWatchDiscussion'));
-			pageobj.setCreateOption('recreate');
+			pageobj.setCreateOption('createonly');
 			return pageobj.save();
 		});
 	}
@@ -1341,32 +1316,18 @@ class Cfd extends XfdMode {
 	}
 
 	addToList() {
-		var params = this.params;
-		var pageobj = new Page(params.logpage, "Adding discussion to today's list");
-		pageobj.setFollowRedirect(true);
+		const params = this.params;
+		const pageobj = new Page(params.discussionpage, 'Creating category discussion page');
 		return pageobj.load().then(() => {
-			var statelem = pageobj.getStatusElement();
-
-			var added_data = this.getDiscussionWikitext();
-			var text;
-
-			// add date header if the log is found to be empty (a bot should do this automatically)
-			if (!pageobj.exists()) {
-				text = '{{subst:CfD log}}\n' + added_data;
-			} else {
-				var old_text = pageobj.getPageText();
-
-				text = old_text.replace('below this line -->', 'below this line -->\n' + added_data);
-				if (text === old_text) {
-					statelem.error('failed to find target spot for the discussion');
-					return $.Deferred().reject();
-				}
+			const statelem = pageobj.getStatusElement();
+			if (pageobj.exists()) {
+				statelem.error('The discussion page already exists; no changes were made.');
+				return $.Deferred().reject();
 			}
-
-			pageobj.setPageText(text);
-			pageobj.setEditSummary('Adding ' + params.action + ' nomination of [[:' + Morebits.pageNameNorm + ']].');
+			pageobj.setPageText(this.getDiscussionWikitext());
+			pageobj.setEditSummary('Creating category discussion for [[:' + Morebits.pageNameNorm + ']].');
 			pageobj.setWatchlist(getPref('xfdWatchDiscussion'));
-			pageobj.setCreateOption('recreate');
+			pageobj.setCreateOption('createonly');
 			return pageobj.save();
 		});
 	}
@@ -1863,31 +1824,19 @@ class Rfd extends XfdMode {
 		});
 	}
 
-	addToList(): JQuery.Promise<void> {
-		let params = this.params;
-		let pageobj = new Page(params.logpage, "Adding discussion to today's log");
-		pageobj.setFollowRedirect(true);
+	addToList() {
+		const params = this.params;
+		const pageobj = new Page(params.discussionpage, 'Creating redirect discussion page');
 		return pageobj.load().then(() => {
-			var statelem = pageobj.getStatusElement();
-			var added_data = this.getDiscussionWikitext();
-			var text;
-
-			// add date header if the log is found to be empty (a bot should do this automatically)
-			if (!pageobj.exists()) {
-				text = '{{subst:RfD log}}' + added_data;
-			} else {
-				var old_text = pageobj.getPageText();
-				text = old_text.replace(/(<!-- Add new entries directly below this line\.? -->)/, '$1\n' + added_data);
-				if (text === old_text) {
-					statelem.error('failed to find target spot for the discussion');
-					return $.Deferred().reject();
-				}
+			const statelem = pageobj.getStatusElement();
+			if (pageobj.exists()) {
+				statelem.error('The discussion page already exists; no changes were made.');
+				return $.Deferred().reject();
 			}
-
-			pageobj.setPageText(text);
-			pageobj.setEditSummary('Adding [[:' + Morebits.pageNameNorm + ']].');
+			pageobj.setPageText(this.getDiscussionWikitext());
+			pageobj.setEditSummary('Creating redirect discussion for [[:' + Morebits.pageNameNorm + ']].');
 			pageobj.setWatchlist(getPref('xfdWatchDiscussion'));
-			pageobj.setCreateOption('recreate');
+			pageobj.setCreateOption('createonly');
 			return pageobj.save();
 		});
 	}
