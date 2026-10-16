@@ -48,7 +48,7 @@ describe('Tewiki AfD helpers', () => {
 		expect(result.ok).toBe(true);
 		if (result.ok) {
 			expect(result.text).toContain(
-				'{{anchor|latest-additions}}\n* [[' +
+				'{{anchor|latest-additions}}\n# [[' +
 					discussion +
 					']]\nఇక్కడ తాజా చేర్పులు కనిపిస్తాయి.'
 			);
