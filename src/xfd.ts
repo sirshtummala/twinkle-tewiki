@@ -477,7 +477,8 @@ class Afd extends XfdMode {
 		super.evaluate();
 		this.tm.add(this.checkPage, []);
 		this.tm.add(this.determineDiscussionPage, []);
-		this.tm.add(this.createDiscussionPage, [this.checkPage, this.determineDiscussionPage], this.printReasonText);
+		this.tm.add(this.preflightLatestAdditions, [this.checkPage, this.determineDiscussionPage]);
+		this.tm.add(this.createDiscussionPage, [this.checkPage, this.determineDiscussionPage, this.preflightLatestAdditions], this.printReasonText);
 		// create discussion page before linking or transcluding it from anywhere, so that
 		// there's no need to do any purging later (#364)
 		this.tm.add(this.tagPage, [this.checkPage, this.createDiscussionPage]); // tagPage has an arg coming from checkPage
@@ -597,6 +598,37 @@ class Afd extends XfdMode {
 			pageobj.setWatchlist(getPref('xfdWatchDiscussion'));
 			pageobj.setCreateOption('createonly');
 			return pageobj.save();
+		});
+	}
+
+	/**
+	 * Validate the main Telugu AfD list before creating the discussion page or
+	 * tagging the article. The list is checked again when it is actually saved,
+	 * since another editor may change it between these steps.
+	 */
+	preflightLatestAdditions() {
+		const pageobj = new Page(
+			mapDestination('Wikipedia:Articles for deletion'),
+			'Checking the latest additions list before nomination'
+		);
+		pageobj.setFollowRedirect(true);
+		return pageobj.load().then(() => {
+			const result = addAfDLatestAddition(
+				pageobj.getPageText(),
+				this.params.discussionpage
+			);
+			if (!result.ok) {
+				const statelem = pageobj.getStatusElement();
+				statelem.error(
+					result.reason === 'anchor-missing'
+						? 'Could not find the latest-additions anchor on the Telugu AfD page; nomination stopped before creating or tagging pages.'
+						: result.reason === 'anchor-ambiguous'
+							? 'The latest-additions anchor is ambiguous on the Telugu AfD page; nomination stopped before creating or tagging pages.'
+							: 'Could not safely identify the end of the latest-additions section; nomination stopped before creating or tagging pages.'
+				);
+				return $.Deferred().reject();
+			}
+			return $.Deferred().resolve();
 		});
 	}
 
