@@ -806,10 +806,11 @@ class Tfd extends XfdMode {
 	}
 
 	// One of the oddities due to our choice of not relying on the local time.
-	setLogPageAndDiscussionPage(timestamp) {
-		var date = new Morebits.date(timestamp);
-		this.params.logpage = 'Wikipedia:Templates for discussion/Log/' + date.format('YYYY MMMM D', 'utc');
-		this.params.discussionpage = this.params.logpage + '#' + Morebits.pageNameNorm;
+	setLogPageAndDiscussionPage(_timestamp) {
+		// TeWiki uses an individual discussion page, not a dated venue log.
+		this.params.discussionpage =
+			mapDestination('Wikipedia:Templates for discussion') + '/' + Morebits.pageNameNorm;
+		this.params.logpage = this.params.discussionpage;
 	}
 
 	tagPageForDeletion() {
@@ -1123,11 +1124,11 @@ class Ffd extends XfdMode {
 		return pageobj.load().then(() => {
 			var text = pageobj.getPageText();
 
-			var date = new Morebits.date(pageobj.getLoadTime()).format('YYYY MMMM D', 'utc');
-			params.logpage = 'Wikipedia:Files for discussion/' + date;
-			params.discussionpage = params.logpage + '#' + Morebits.pageNameNorm;
+			params.discussionpage =
+				mapDestination('Wikipedia:Files for discussion') + '/' + Morebits.pageNameNorm.replace(/^File:/, '');
+			params.logpage = params.discussionpage;
 
-			params.tagText = '{{ffd|log=' + date + '|help=off}}\n';
+			params.tagText = '{{ffd|help=off}}\n';
 			if (pageobj.canEdit()) {
 				text = text.replace(
 					/\{\{(mtc|(copy |move )?to ?commons|move to wikimedia commons|copy to wikimedia commons)[^}]*\}\}/gi,
@@ -1307,9 +1308,9 @@ class Cfd extends XfdMode {
 		pageobj.setFollowRedirect(true); // should never be needed, but if the page is moved, we would want to follow the redirect
 		return pageobj.load().then(() => {
 			// Set data for future actions first
-			var date = new Morebits.date(pageobj.getLoadTime());
-			params.logpage = 'Wikipedia:Categories for discussion/Log/' + date.format('YYYY MMMM D', 'utc');
-			params.discussionpage = params.logpage + '#' + Morebits.pageNameNorm;
+			params.discussionpage =
+				mapDestination('Wikipedia:Categories for discussion') + '/' + Morebits.pageNameNorm.replace(/^Category:/, '');
+			params.logpage = params.discussionpage;
 
 			var text = pageobj.getPageText();
 			params.tagText =
@@ -1810,9 +1811,9 @@ class Rfd extends XfdMode {
 		return wikipedia_api.post().then((apiobj) => {
 			var response = apiobj.getResponse();
 			this.params.curtimestamp = response.curtimestamp;
-			var date = new Morebits.date(this.params.curtimestamp);
-			this.params.logpage = 'Wikipedia:Redirects for discussion/Log/' + date.format('YYYY MMMM D', 'utc');
-			this.params.discussionpage = this.params.logpage + '#' + Morebits.pageNameNorm;
+			this.params.discussionpage =
+				mapDestination('Wikipedia:Redirects for discussion') + '/' + Morebits.pageNameNorm;
+			this.params.logpage = this.params.discussionpage;
 
 			if (!isSoftRedirect) {
 				var target = response.query.redirects && response.query.redirects[0].to;
