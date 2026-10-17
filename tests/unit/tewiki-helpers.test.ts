@@ -1,4 +1,4 @@
-import { addAfDLatestAddition, getAfDDiscussionTitle } from '../../src/tewiki-helpers';
+import { addAfDLatestAddition, getAfDDiscussionTitle, makeTaskFailureHandler } from '../../src/tewiki-helpers';
 
 describe('Telugu Wikipedia AfD helpers', () => {
 	test('builds the discussion page title under the Telugu AfD root', () => {
@@ -113,5 +113,55 @@ describe('Telugu Wikipedia AfD helpers', () => {
 			expect(result.text).toContain('# [[Discussion]]');
 			expect(result.text).toContain('== Other section ==');
 		}
+	});
+});
+
+
+describe('AfD task failure propagation', () => {
+	test('rejects a dependent task deferred when a prerequisite fails', () => {
+		let state = 'pending';
+		const task = () => undefined;
+		const reject = jest.fn((..._args: unknown[]) => {
+			state = 'rejected';
+		});
+		const taskManager = {
+			deferreds: new Map([
+				[
+					task,
+					{
+						state: () => state,
+						reject,
+					},
+				],
+			]),
+		};
+		const onFailure = jest.fn();
+		const handler = makeTaskFailureHandler(taskManager, task, onFailure);
+
+		handler('prerequisite failed');
+
+		expect(reject).toHaveBeenCalledWith('prerequisite failed');
+		expect(state).toBe('rejected');
+		expect(onFailure).toHaveBeenCalledWith('prerequisite failed');
+	});
+
+	test('does not try to reject a task deferred that has already settled', () => {
+		const task = () => undefined;
+		const reject = jest.fn();
+		const taskManager = {
+			deferreds: new Map([
+				[
+					task,
+					{
+						state: () => 'rejected',
+						reject,
+					},
+				],
+			]),
+		};
+
+		makeTaskFailureHandler(taskManager, task)('prerequisite failed');
+
+		expect(reject).not.toHaveBeenCalled();
 	});
 });
