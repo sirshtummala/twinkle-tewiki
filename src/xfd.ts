@@ -696,7 +696,7 @@ class Afd extends XfdMode {
 					var discussionPage = params.discussionpage;
 					var text = delsortPage
 						.getPageText()
-						.replace('directly below this line -->', 'directly below this line -->\\n{{' + discussionPage + '}}');
+						.replace('directly below this line -->', 'directly below this line -->\n{{' + discussionPage + '}}');
 					delsortPage.setPageText(text);
 					delsortPage.setEditSummary('Listing [[:' + discussionPage + ']].');
 
