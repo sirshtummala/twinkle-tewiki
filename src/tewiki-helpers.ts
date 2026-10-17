@@ -38,7 +38,7 @@ export function addAfDLatestAddition(
 ): LatestAdditionsResult {
 	const anchor = tewikiDeletionWorkflow.afdLatestAdditionsAnchor;
 	const anchorPattern = new RegExp(
-		`(?:\\{\\{\\s*anchor\\s*\\|\\s*${escapeRegExp(anchor)}\\s*(?:\\|[^}]+)?\\}\\}|id\\s*=\\s*["']?${escapeRegExp(anchor)}["']?)`,
+		`(?:\\{\\{\s*anchor\s*\\|\s*${escapeRegExp(anchor)}\s*(?:\\|[^}]+)?\\}\\}|id\s*=\s*["']?${escapeRegExp(anchor)}["']?)`,
 		'gi'
 	);
 	const anchors: Array<{ index: number }> = [];
@@ -52,7 +52,7 @@ export function addAfDLatestAddition(
 	// Prefer an explicit anchor when present; otherwise fall back to that exact
 	// local heading, refusing to proceed if it is missing or ambiguous.
 	if (anchors.length === 0) {
-		const headingPattern = /^={1,6}\\s*తాజా చేర్పులు\\s*={1,6}\\s*$/gm;
+		const headingPattern = /^={1,6}\s*తాజా చేర్పులు\s*={1,6}\s*$/gm;
 		let headingMatch: RegExpExecArray | null;
 		while ((headingMatch = headingPattern.exec(pageText)) !== null) {
 			anchors.push({ index: headingMatch.index });
