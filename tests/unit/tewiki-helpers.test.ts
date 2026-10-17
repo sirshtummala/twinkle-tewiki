@@ -9,7 +9,7 @@ describe('Telugu Wikipedia AfD helpers', () => {
 
 	test('adds a nomination after the final bullet in latest additions', () => {
 		const input = [
-			'== <span class="anchor"></span> తాజా చేర్పులు ==',
+			'== తాజా చేర్పులు ==',
 			'{{anchor|latest-additions}}',
 			'* [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Existing article]]',
 			'* [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Another article]]',
@@ -44,7 +44,7 @@ describe('Telugu Wikipedia AfD helpers', () => {
 
 	test('uses the live Telugu latest-additions heading when no explicit anchor exists', () => {
 		const input = [
-			'== తాజా చేర్పులు ==',
+			'== <span class="anchor"></span> తాజా చేర్పులు ==',
 			'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Existing article]]',
 			'',
 			'== పాత చర్చలు ==',
