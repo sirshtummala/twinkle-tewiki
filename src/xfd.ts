@@ -2,7 +2,7 @@ import { getPref, Page, Api, PreferenceGroup, Preference, Config } from './core'
 import { addNs, makeTemplate, obj_entries, stripNs } from './utils';
 import { XfdCore, XfdMode } from './core';
 import { makeFindSourcesDiv, hatnoteRegex } from './common';
-import { addAfDLatestAddition } from './tewiki-helpers';
+import { addAfDLatestAddition, makeTaskFailureHandler } from './tewiki-helpers';
 import { mapDestination, tewikiDeletionWorkflow } from './tewiki-config';
 
 class Afd extends XfdMode {
@@ -475,22 +475,36 @@ class Afd extends XfdMode {
 
 	evaluate() {
 		super.evaluate();
-		this.tm.add(this.checkPage, []);
-		this.tm.add(this.determineDiscussionPage, []);
-		this.tm.add(this.preflightLatestAdditions, [this.checkPage, this.determineDiscussionPage]);
-		this.tm.add(this.createDiscussionPage, [this.checkPage, this.determineDiscussionPage, this.preflightLatestAdditions], this.printReasonText);
+		// twinkle-core 3.1.2 does not reject a dependent task's Deferred when one
+		// of its prerequisites fails. Wrap every AfD task's failure callback so
+		// that failure propagates through the chain and execute() can settle.
+		const addAfdTask = (task: Function, dependencies: Function[], onFailure?: (...args: any[]) => void) => {
+			this.tm.add(
+				task,
+				dependencies,
+				makeTaskFailureHandler(this.tm as any, task, onFailure)
+			);
+		};
+		addAfdTask(this.checkPage, []);
+		addAfdTask(this.determineDiscussionPage, []);
+		addAfdTask(this.preflightLatestAdditions, [this.checkPage, this.determineDiscussionPage]);
+		addAfdTask(
+			this.createDiscussionPage,
+			[this.checkPage, this.determineDiscussionPage, this.preflightLatestAdditions],
+			this.printReasonText
+		);
 		// create discussion page before linking or transcluding it from anywhere, so that
 		// there's no need to do any purging later (#364)
-		this.tm.add(this.addToList, [this.createDiscussionPage]);
+		addAfdTask(this.addToList, [this.createDiscussionPage]);
 		// Do not tag the article unless the discussion exists and the main AfD list
 		// was updated (or the nomination was already listed).
-		this.tm.add(this.tagPage, [this.checkPage, this.createDiscussionPage, this.addToList]); // tagPage uses the checkPage result
+		addAfdTask(this.tagPage, [this.checkPage, this.createDiscussionPage, this.addToList]); // tagPage uses the checkPage result
 
-		this.tm.add(this.addToDelsortLists, [this.createDiscussionPage, this.addToList]);
-		this.tm.add(this.patrolPage, [this.checkPage, this.addToList, this.tagPage]);
-		this.tm.add(this.fetchCreatorInfo, []);
-		this.tm.add(this.notifyCreator, [this.createDiscussionPage, this.addToList, this.tagPage, this.fetchCreatorInfo]);
-		this.tm.add(this.addToLog, [this.notifyCreator]);
+		addAfdTask(this.addToDelsortLists, [this.createDiscussionPage, this.addToList]);
+		addAfdTask(this.patrolPage, [this.checkPage, this.addToList, this.tagPage]);
+		addAfdTask(this.fetchCreatorInfo, []);
+		addAfdTask(this.notifyCreator, [this.createDiscussionPage, this.addToList, this.tagPage, this.fetchCreatorInfo]);
+		addAfdTask(this.addToLog, [this.notifyCreator]);
 		this.tm.execute().then(() => this.redirectToDiscussion());
 	}
 
