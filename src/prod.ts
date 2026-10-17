@@ -68,7 +68,7 @@ export class Prod extends TwinkleModule {
 			Window.addFooterLink('Proposed deletion policy', mapDestination('WP:PROD'));
 			Window.addFooterLink('BLP PROD policy', 'WP:BLPPROD');
 		} else if (this.namespace === 'file') {
-			Window.addFooterLink('Proposed deletion policy', 'WP:PROD');
+			Window.addFooterLink('Proposed deletion policy', mapDestination('WP:PROD'));
 		} else {
 			// if book
 			Window.addFooterLink('Proposed deletion (books) policy', 'WP:BOOKPROD');
