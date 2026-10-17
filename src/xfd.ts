@@ -630,6 +630,13 @@ class Afd extends XfdMode {
 		);
 		pageobj.setFollowRedirect(true);
 		return pageobj.load().then(() => {
+			const statelem = pageobj.getStatusElement();
+			if (!pageobj.canEdit()) {
+				statelem.error(
+					'You cannot edit the Telugu AfD list; nomination stopped before creating or tagging pages.'
+				);
+				return $.Deferred().reject();
+			}
 			const result = addAfDLatestAddition(
 				pageobj.getPageText(),
 				this.params.discussionpage
