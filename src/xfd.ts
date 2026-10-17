@@ -703,7 +703,8 @@ class Afd extends XfdMode {
 					delsortPage.setCreateOption('nocreate');
 					return delsortPage.save();
 				})
-			);;
+			);
+		});
 
 		return $.when.apply($, promises);
 	}
