@@ -486,10 +486,10 @@ class Afd extends XfdMode {
 		// was updated (or the nomination was already listed).
 		this.tm.add(this.tagPage, [this.checkPage, this.createDiscussionPage, this.addToList]); // tagPage uses the checkPage result
 
-		this.tm.add(this.addToDelsortLists, [this.createDiscussionPage]);
-		this.tm.add(this.patrolPage, [this.checkPage]);
+		this.tm.add(this.addToDelsortLists, [this.createDiscussionPage, this.addToList]);
+		this.tm.add(this.patrolPage, [this.checkPage, this.addToList, this.tagPage]);
 		this.tm.add(this.fetchCreatorInfo, []);
-		this.tm.add(this.notifyCreator, [this.createDiscussionPage, this.addToList, this.fetchCreatorInfo]);
+		this.tm.add(this.notifyCreator, [this.createDiscussionPage, this.addToList, this.tagPage, this.fetchCreatorInfo]);
 		this.tm.add(this.addToLog, [this.notifyCreator]);
 		this.tm.execute().then(() => this.redirectToDiscussion());
 	}
