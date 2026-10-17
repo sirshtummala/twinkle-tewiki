@@ -436,6 +436,11 @@ class Afd extends XfdMode {
 	postRender(renderedFieldset: HTMLFieldSetElement) {
 		makeFindSourcesDiv('#twinkle-xfd-findsources');
 
+		// Do not expose English Wikipedia deletion-sorting links on tewiki.
+		if (!tewikiDeletionWorkflow.updateDeletionSortingLists) {
+			return;
+		}
+
 		$(renderedFieldset)
 			.find('[name=delsortCats]')
 			.attr('data-placeholder', 'Select delsort pages')
@@ -598,7 +603,7 @@ class Afd extends XfdMode {
 				pg: Morebits.pageNameNorm,
 				cat: params.xfdcat,
 			}) +
-			params.delsortCats
+			(tewikiDeletionWorkflow.updateDeletionSortingLists ? params.delsortCats : [])
 				.map(function (cat) {
 					return '\n{{subst:delsort|' + cat + '|~~~~}}';
 				})
@@ -691,6 +696,11 @@ class Afd extends XfdMode {
 	}
 
 	addToDelsortLists() {
+		// TeWiki's deletion-sorting destinations and templates have not been confirmed.
+		// Never write to the English Wikipedia project pages from this workflow.
+		if (!tewikiDeletionWorkflow.updateDeletionSortingLists) {
+			return $.Deferred().resolve();
+		}
 		let params = this.params;
 		let promises = params.delsortCats.map((cat) => {
 			var delsortPage = new Page(
