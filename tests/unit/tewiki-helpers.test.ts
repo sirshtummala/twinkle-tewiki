@@ -65,8 +65,8 @@ describe('Telugu Wikipedia AfD helpers', () => {
 		});
 	});
 
-	test('fails safely when the anchor is missing', () => {
-		expect(addAfDLatestAddition('== తాజా చేర్పులు ==\n* existing\n', 'Discussion')).toEqual({
+	test('fails safely when both the explicit anchor and fallback heading are missing', () => {
+		expect(addAfDLatestAddition('== ఇతర విభాగం ==\n* existing\n', 'Discussion')).toEqual({
 			ok: false,
 			reason: 'anchor-missing',
 		});
