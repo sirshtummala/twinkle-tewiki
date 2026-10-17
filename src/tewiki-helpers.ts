@@ -47,6 +47,18 @@ export function addAfDLatestAddition(
 		anchors.push({ index: anchorMatch.index });
 	}
 
+	// The live Tewiki AfD page currently has a plain "తాజా చేర్పులు" heading,
+	// not the optional explicit latest-additions anchor used by some test pages.
+	// Prefer an explicit anchor when present; otherwise fall back to that exact
+	// local heading, refusing to proceed if it is missing or ambiguous.
+	if (anchors.length === 0) {
+		const headingPattern = /^={1,6}\\s*తాజా చేర్పులు\\s*={1,6}\\s*$/gm;
+		let headingMatch: RegExpExecArray | null;
+		while ((headingMatch = headingPattern.exec(pageText)) !== null) {
+			anchors.push({ index: headingMatch.index });
+		}
+	}
+
 	if (anchors.length === 0) {
 		return { ok: false, reason: 'anchor-missing' };
 	}
