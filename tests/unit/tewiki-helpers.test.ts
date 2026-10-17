@@ -42,6 +42,29 @@ describe('Telugu Wikipedia AfD helpers', () => {
 		});
 	});
 
+	test('uses the live Telugu latest-additions heading when no explicit anchor exists', () => {
+		const input = [
+			'== తాజా చేర్పులు ==',
+			'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Existing article]]',
+			'',
+			'== పాత చర్చలు ==',
+		].join('\\n');
+		const result = addAfDLatestAddition(input, 'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/New article');
+		expect(result.ok).toBe(true);
+		if (result.ok) {
+			expect(result.text).toContain('# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/New article]]');
+			expect(result.text).toContain('== పాత చర్చలు ==');
+		}
+	});
+
+	test('fails safely when the latest-additions heading is ambiguous', () => {
+		const input = '== తాజా చేర్పులు ==\\n# one\\n== తాజా చేర్పులు ==\\n# two\\n';
+		expect(addAfDLatestAddition(input, 'Discussion')).toEqual({
+			ok: false,
+			reason: 'anchor-ambiguous',
+		});
+	});
+
 	test('fails safely when the anchor is missing', () => {
 		expect(addAfDLatestAddition('== తాజా చేర్పులు ==\n* existing\n', 'Discussion')).toEqual({
 			ok: false,
