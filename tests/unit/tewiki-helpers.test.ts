@@ -174,12 +174,23 @@ describe('AfD task failure propagation', () => {
 		const dependent = jest.fn(() => $.Deferred().resolve());
 
 		taskManager.add(prerequisite, []);
-		taskManager.add(dependent, [prerequisite], makeTaskFailureHandler(taskManager, dependent));
+		let signalDependentFailure: (() => void) | undefined;
+		const dependentFailure = new Promise<void>((resolve) => {
+			signalDependentFailure = resolve;
+		});
+		taskManager.add(
+			dependent,
+			[prerequisite],
+			makeTaskFailureHandler(taskManager, dependent, () => signalDependentFailure?.())
+		);
 
 		const execution = taskManager.execute();
 		await expect(
 			new Promise((resolve, reject) => execution.then(resolve, reject))
 		).rejects.toThrow('preflight failed');
+		// The manager's overall promise can reject before the dependency-failure
+		// callback runs, so wait for that callback before inspecting its deferred.
+		await dependentFailure;
 
 		expect(prerequisite).toHaveBeenCalledTimes(1);
 		expect(dependent).not.toHaveBeenCalled();
