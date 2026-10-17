@@ -38,7 +38,7 @@ export function addAfDLatestAddition(
 ): LatestAdditionsResult {
 	const anchor = tewikiDeletionWorkflow.afdLatestAdditionsAnchor;
 	const anchorPattern = new RegExp(
-		`(?:\\{\\{\s*anchor\s*\\|\s*${escapeRegExp(anchor)}\s*(?:\\|[^}]+)?\\}\\}|id\s*=\s*["']?${escapeRegExp(anchor)}["']?)`,
+		`(?:\\{\\{\\s*anchor\\s*\\|\\s*${escapeRegExp(anchor)}\\s*(?:\\|[^}]+)?\\}\\}|id\\s*=\\s*["']?${escapeRegExp(anchor)}["']?)`,
 		'gi'
 	);
 	const anchors: Array<{ index: number }> = [];
