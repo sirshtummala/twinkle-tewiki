@@ -416,12 +416,12 @@ class Afd extends XfdMode {
 		if (tewikiDeletionWorkflow.updateDeletionSortingLists) {
 			var delsort = this.fieldset.append({
 				type: 'select',
-			multiple: true,
-			name: 'delsortCats',
-			label: 'Choose deletion sorting categories: ',
-			tooltip:
-				'Select a few categories that are specifically relevant to the subject of the article. Be as precise as possible; categories like People and USA should only be used when no other categories apply.',
-		});
+				multiple: true,
+				name: 'delsortCats',
+				label: 'Choose deletion sorting categories: ',
+				tooltip:
+					'Select a few categories that are specifically relevant to the subject of the article. Be as precise as possible; categories like People and USA should only be used when no other categories apply.',
+			});
 
 			$.each(delsortCategories, function (groupname, list) {
 				var group = delsort.append({ type: 'optgroup', label: groupname });
