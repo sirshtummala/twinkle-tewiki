@@ -1,4 +1,4 @@
-import { addAfDLatestAddition, getAfDDiscussionTitle, makeTaskFailureHandler } from '../../src/tewiki-helpers';
+import { addAfDLatestAddition, getAfDDiscussionTitle, ignoreOptionalTaskFailure, makeTaskFailureHandler } from '../../src/tewiki-helpers';
 
 describe('Telugu Wikipedia AfD helpers', () => {
 	test('builds the discussion page title under the Telugu AfD root', () => {
@@ -116,6 +116,17 @@ describe('Telugu Wikipedia AfD helpers', () => {
 	});
 });
 
+
+describe('Optional AfD task failures', () => {
+	test('converts an optional task rejection into a resolved promise', async () => {
+		const optionalTask = $.Deferred();
+		const result = ignoreOptionalTaskFailure(optionalTask.promise());
+
+		optionalTask.reject(new Error('deletion-sorting page load failed'));
+
+		await expect(new Promise((resolve, reject) => result.then(resolve, reject))).resolves.toBeUndefined();
+	});
+});
 
 describe('AfD task failure propagation', () => {
 	test('rejects a dependent task deferred when a prerequisite fails', () => {
