@@ -738,6 +738,18 @@ class Afd extends XfdMode {
 	getNotifyText(): string {
 		return getAfDNotificationText(Morebits.pageNameNorm, this.params.discussionpage);
 	}
+
+	getNotifyEditSummary(): string {
+		return (
+			'Notification: [[' +
+			this.params.discussionpage +
+			'|listing]] of [[:' +
+			Morebits.pageNameNorm +
+			']] at [[' +
+			mapDestination('Wikipedia:Articles for deletion') +
+			']].'
+		);
+	}
 }
 
 class Tfd extends XfdMode {
