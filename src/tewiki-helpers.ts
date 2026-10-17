@@ -47,10 +47,10 @@ export function addAfDLatestAddition(
 		anchors.push({ index: anchorMatch.index });
 	}
 
-	// The live Tewiki AfD page currently has a plain "తాజా చేర్పులు" heading,
-	// not the optional explicit latest-additions anchor used by some test pages.
-	// Prefer an explicit anchor when present; otherwise fall back to that exact
-	// local heading, refusing to proceed if it is missing or ambiguous.
+	// Prefer the explicit latest-additions anchor used by the live page.
+	// If it is absent, fall back to the exact local heading text, ignoring inline
+	// HTML such as the anchor span; refuse to proceed if the target is missing
+	// or ambiguous.
 	if (anchors.length === 0) {
 		// Match the heading's visible text, ignoring inline HTML such as the
 		// <span class="anchor"> element used on the live Telugu AfD page.
