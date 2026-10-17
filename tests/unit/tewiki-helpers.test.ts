@@ -165,54 +165,25 @@ describe('AfD task failure propagation', () => {
 		expect(reject).not.toHaveBeenCalled();
 	});
 
-	test('settles a dependent task when its prerequisite rejects in the task-manager sequence', async () => {
-		// Mirrors Morebits.taskManager's dependency-failure path: the core manager
-		// invokes the dependent task's failure callback but does not reject its
-		// Deferred unless that callback does so.
-		const makeDeferred = () => {
-			let state: 'pending' | 'resolved' | 'rejected' = 'pending';
-			let resolvePromise!: () => void;
-			let rejectPromise!: (reason: unknown) => void;
-			const promise = new Promise<void>((resolve, reject) => {
-				resolvePromise = resolve;
-				rejectPromise = reject;
-			});
-			return {
-				promise,
-				state: () => state,
-				resolve: () => {
-					if (state === 'pending') {
-						state = 'resolved';
-						resolvePromise();
-					}
-				},
-				reject: (reason: unknown) => {
-					if (state === 'pending') {
-						state = 'rejected';
-						rejectPromise(reason);
-					}
-				},
-			};
-		};
+	test('settles a dependent task when a prerequisite rejects in Morebits.taskManager', async () => {
+		// Load the actual Morebits implementation shipped by the twinkle-core dependency.
+		require('twinkle-core/morebits/morebits.js');
+		const Morebits = (window as any).Morebits;
+		const taskManager = new Morebits.taskManager();
+		const prerequisite = jest.fn(() => $.Deferred().reject(new Error('preflight failed')));
+		const dependent = jest.fn(() => $.Deferred().resolve());
 
-		const prerequisite = () => undefined;
-		const dependent = jest.fn(() => Promise.resolve());
-		const deferreds = new Map([
-			[prerequisite, makeDeferred()],
-			[dependent, makeDeferred()],
-		]);
-		const failureHandler = makeTaskFailureHandler({ deferreds }, dependent);
-		const prerequisiteDeferred = deferreds.get(prerequisite)!;
-		const dependentDeferred = deferreds.get(dependent)!;
+		taskManager.add(prerequisite, []);
+		taskManager.add(dependent, [prerequisite], makeTaskFailureHandler(taskManager, dependent));
 
-		// Simulate the prerequisite rejection and the core manager's failure callback.
-		prerequisiteDeferred.reject(new Error('preflight failed'));
-		await prerequisiteDeferred.promise.catch(() => undefined);
-		failureHandler(new Error('preflight failed'));
+		const execution = taskManager.execute();
+		await expect(
+			new Promise((resolve, reject) => execution.then(resolve, reject))
+		).rejects.toThrow('preflight failed');
 
+		expect(prerequisite).toHaveBeenCalledTimes(1);
 		expect(dependent).not.toHaveBeenCalled();
-		expect(dependentDeferred.state()).toBe('rejected');
-		await expect(dependentDeferred.promise).rejects.toThrow('preflight failed');
+		expect(taskManager.deferreds.get(dependent).state()).toBe('rejected');
 	});
 
 });
