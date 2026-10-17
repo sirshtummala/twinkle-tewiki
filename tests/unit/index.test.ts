@@ -102,6 +102,10 @@ describe('Tewiki configuration mappings', () => {
 		expect(mapCategory('Category:Wikipedia books (user books)')).toBe('Category:Wikipedia books (user books)');
 	});
 
+	it('disables unconfirmed English deletion-sorting destinations', () => {
+		expect(tewikiDeletionWorkflow.updateDeletionSortingLists).toBe(false);
+	});
+
 	it('explicitly disables dated XfD venue logs', () => {
 		expect(tewikiDeletionWorkflow.createDatedXfdVenueLogs).toBe(false);
 		expect(tewikiDeletionWorkflow.translationTagRequiresEditorSelection).toBe(true);
