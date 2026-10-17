@@ -1,4 +1,10 @@
-import { addAfDLatestAddition, getAfDDiscussionTitle, getAfDNotificationText, ignoreOptionalTaskFailure, makeTaskFailureHandler } from '../../src/tewiki-helpers';
+import {
+	addAfDLatestAddition,
+	getAfDDiscussionTitle,
+	getAfDNotificationText,
+	ignoreOptionalTaskFailure,
+	makeTaskFailureHandler,
+} from '../../src/tewiki-helpers';
 
 describe('Telugu Wikipedia AfD helpers', () => {
 	test('builds the discussion page title under the Telugu AfD root', () => {
