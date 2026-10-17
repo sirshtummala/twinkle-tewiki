@@ -120,3 +120,35 @@ export function addAfDLatestAddition(
 function escapeRegExp(value: string): string {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+
+/**
+ * Build a failure callback for Morebits.taskManager tasks.
+ *
+ * twinkle-core 3.1.2 calls a task's failure callback when a dependency rejects,
+ * but does not reject the dependent task's own Deferred in that path. Rejecting
+ * that Deferred here lets the failure propagate through the dependency chain
+ * and allows execute() to settle instead of waiting indefinitely.
+ */
+export interface TaskManagerFailureTarget {
+	deferreds: Map<Function, {
+		state: () => string;
+		reject: (...args: any[]) => unknown;
+	}>;
+}
+
+export function makeTaskFailureHandler(
+	taskManager: TaskManagerFailureTarget,
+	task: Function,
+	onFailure?: (...args: any[]) => void
+): (...args: any[]) => void {
+	return function (this: unknown, ...args: any[]) {
+		const deferred = taskManager.deferreds.get(task);
+		if (deferred && deferred.state() === 'pending') {
+			deferred.reject(...args);
+		}
+		if (onFailure) {
+			onFailure.apply(this, args);
+		}
+	};
+}
