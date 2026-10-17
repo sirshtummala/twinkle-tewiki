@@ -2,7 +2,7 @@ import { getPref, Page, Api, PreferenceGroup, Preference, Config } from './core'
 import { addNs, makeTemplate, obj_entries, stripNs } from './utils';
 import { XfdCore, XfdMode } from './core';
 import { makeFindSourcesDiv, hatnoteRegex } from './common';
-import { addAfDLatestAddition, makeTaskFailureHandler } from './tewiki-helpers';
+import { addAfDLatestAddition, getAfDNotificationText, makeTaskFailureHandler } from './tewiki-helpers';
 import { mapDestination, tewikiDeletionWorkflow } from './tewiki-config';
 
 class Afd extends XfdMode {
@@ -736,12 +736,7 @@ class Afd extends XfdMode {
 	}
 
 	getNotifyText(): string {
-		return (
-			makeTemplate('subst:afd notice', {
-				1: Morebits.pageNameNorm,
-				order: this.params.numbering ? `|order=&#32;${this.params.numbering}` : '',
-			}) + ' ~~~~'
-		);
+		return getAfDNotificationText(Morebits.pageNameNorm, this.params.discussionpage);
 	}
 }
 
