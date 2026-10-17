@@ -481,8 +481,11 @@ class Afd extends XfdMode {
 		this.tm.add(this.createDiscussionPage, [this.checkPage, this.determineDiscussionPage, this.preflightLatestAdditions], this.printReasonText);
 		// create discussion page before linking or transcluding it from anywhere, so that
 		// there's no need to do any purging later (#364)
-		this.tm.add(this.tagPage, [this.checkPage, this.createDiscussionPage]); // tagPage has an arg coming from checkPage
 		this.tm.add(this.addToList, [this.createDiscussionPage]);
+		// Do not tag the article unless the discussion exists and the main AfD list
+		// was updated (or the nomination was already listed).
+		this.tm.add(this.tagPage, [this.checkPage, this.createDiscussionPage, this.addToList]); // tagPage uses the checkPage result
+
 		this.tm.add(this.addToDelsortLists, [this.createDiscussionPage]);
 		this.tm.add(this.patrolPage, [this.checkPage]);
 		this.tm.add(this.fetchCreatorInfo, []);
