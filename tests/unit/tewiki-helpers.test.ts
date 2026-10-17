@@ -11,10 +11,10 @@ describe('Telugu Wikipedia AfD helpers', () => {
 		expect(
 			getAfDNotificationText(
 				'Example article',
-				'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article (2)'
+				'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article (2nd nomination)'
 			)
 		).toBe(
-			'\nమీరు సృష్టించిన [[:Example article]] వ్యాసాన్ని తొలగింపు చర్చకు ప్రతిపాదించారు. దయచేసి [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article (2)]] చర్చలో పాల్గొనండి. ~~~~'
+			'\nమీరు సృష్టించిన [[:Example article]] వ్యాసాన్ని తొలగింపు చర్చకు ప్రతిపాదించారు. దయచేసి [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article (2nd nomination)]] చర్చలో పాల్గొనండి. ~~~~'
 		);
 	});
 
