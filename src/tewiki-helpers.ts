@@ -18,6 +18,15 @@ export function getAfDDiscussionTitle(articleTitle: string): string {
 }
 
 /**
+ * Build a creator notice that links directly to the actual tewiki discussion.
+ * Avoid the English Wikipedia-specific `afd notice` template, whose link target
+ * and numbering conventions have not been confirmed for tewiki.
+ */
+export function getAfDNotificationText(articleTitle: string, discussionTitle: string): string {
+	return `\nమీరు సృష్టించిన [[:${articleTitle}]] వ్యాసాన్ని తొలగింపు చర్చకు ప్రతిపాదించారు. దయచేసి [[${discussionTitle}]] చర్చలో పాల్గొనండి. ~~~~`;
+}
+
+/**
  * Add a nomination link to the uniquely identified latest-additions section.
  *
  * Safety rules:
