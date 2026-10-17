@@ -7,7 +7,7 @@ describe('Telugu Wikipedia AfD helpers', () => {
 		);
 	});
 
-	test('creator notice links directly to the actual Telugu discussion page', () => {
+	test('creator notice links directly to a numbered Telugu discussion page', () => {
 		expect(
 			getAfDNotificationText(
 				'Example article',
