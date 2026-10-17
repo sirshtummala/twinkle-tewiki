@@ -47,6 +47,8 @@ export const tewikiDeletionWorkflow = {
 	afdDiscussionRoot: 'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు',
 	/** Anchor on the main AfD page where new nomination links are listed. */
 	afdLatestAdditionsAnchor: 'latest-additions',
+	/** Do not touch English Wikipedia deletion-sorting pages until tewiki destinations are confirmed. */
+	updateDeletionSortingLists: false,
 	/** This is intentionally an editor-selected action, not automatic language detection. */
 	translationTagRequiresEditorSelection: true,
 } as const;
