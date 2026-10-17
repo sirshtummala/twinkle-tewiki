@@ -137,6 +137,14 @@ export interface TaskManagerFailureTarget {
 	}>;
 }
 
+/**
+ * Treat failures in a non-essential task as best-effort and let the workflow continue.
+ * Accepts a jQuery promise because Morebits tasks use jQuery Deferreds.
+ */
+export function ignoreOptionalTaskFailure<T>(promise: JQuery.Promise<T>): JQuery.Promise<T | void> {
+	return promise.catch(() => undefined);
+}
+
 export function makeTaskFailureHandler(
 	taskManager: TaskManagerFailureTarget,
 	task: Function,
