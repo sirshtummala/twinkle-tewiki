@@ -1,9 +1,20 @@
-import { addAfDLatestAddition, getAfDDiscussionTitle, ignoreOptionalTaskFailure, makeTaskFailureHandler } from '../../src/tewiki-helpers';
+import { addAfDLatestAddition, getAfDDiscussionTitle, getAfDNotificationText, ignoreOptionalTaskFailure, makeTaskFailureHandler } from '../../src/tewiki-helpers';
 
 describe('Telugu Wikipedia AfD helpers', () => {
 	test('builds the discussion page title under the Telugu AfD root', () => {
 		expect(getAfDDiscussionTitle('Example article')).toBe(
 			'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article'
+		);
+	});
+
+	test('creator notice links directly to the actual Telugu discussion page', () => {
+		expect(
+			getAfDNotificationText(
+				'Example article',
+				'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article (2)'
+			)
+		).toBe(
+			'\nమీరు సృష్టించిన [[:Example article]] వ్యాసాన్ని తొలగింపు చర్చకు ప్రతిపాదించారు. దయచేసి [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article (2)]] చర్చలో పాల్గొనండి. ~~~~'
 		);
 	});
 
