@@ -52,10 +52,15 @@ export function addAfDLatestAddition(
 	// Prefer an explicit anchor when present; otherwise fall back to that exact
 	// local heading, refusing to proceed if it is missing or ambiguous.
 	if (anchors.length === 0) {
-		const headingPattern = /^={1,6}\s*తాజా చేర్పులు\s*={1,6}\s*$/gm;
+		// Match the heading's visible text, ignoring inline HTML such as the
+		// <span class="anchor"> element used on the live Telugu AfD page.
+		const headingPattern = /^={1,6}([^\n]*?)={1,6}\s*$/gm;
 		let headingMatch: RegExpExecArray | null;
 		while ((headingMatch = headingPattern.exec(pageText)) !== null) {
-			anchors.push({ index: headingMatch.index });
+			const headingText = headingMatch[1].replace(/<[^>]*>/g, '').trim();
+			if (headingText === 'తాజా చేర్పులు') {
+				anchors.push({ index: headingMatch.index });
+			}
 		}
 	}
 
