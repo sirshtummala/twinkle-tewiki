@@ -691,18 +691,19 @@ class Afd extends XfdMode {
 				'Adding to list of ' + cat + '-related deletion discussions'
 			);
 			delsortPage.setFollowRedirect(true); // In case a category gets renamed
-			return delsortPage.load().then(() => {
-				var discussionPage = params.discussionpage;
-				var text = delsortPage
-					.getPageText()
-					.replace('directly below this line -->', 'directly below this line -->\n{{' + discussionPage + '}}');
-				delsortPage.setPageText(text);
-				delsortPage.setEditSummary('Listing [[:' + discussionPage + ']].');
+			return ignoreOptionalTaskFailure(
+				delsortPage.load().then(() => {
+					var discussionPage = params.discussionpage;
+					var text = delsortPage
+						.getPageText()
+						.replace('directly below this line -->', 'directly below this line -->\\n{{' + discussionPage + '}}');
+					delsortPage.setPageText(text);
+					delsortPage.setEditSummary('Listing [[:' + discussionPage + ']].');
 
-				delsortPage.setCreateOption('nocreate');
-				return delsortPage.save().catch(function () {}); // failures aren't important
-			});
-		});
+					delsortPage.setCreateOption('nocreate');
+					return delsortPage.save();
+				})
+			);;
 
 		return $.when.apply($, promises);
 	}
