@@ -48,7 +48,7 @@ describe('Telugu Wikipedia AfD helpers', () => {
 			'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Existing article]]',
 			'',
 			'== పాత చర్చలు ==',
-		].join('\\n');
+		].join('\n');
 		const result = addAfDLatestAddition(input, 'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/New article');
 		expect(result.ok).toBe(true);
 		if (result.ok) {
@@ -58,7 +58,7 @@ describe('Telugu Wikipedia AfD helpers', () => {
 	});
 
 	test('fails safely when the latest-additions heading is ambiguous', () => {
-		const input = '== తాజా చేర్పులు ==\\n# one\\n== తాజా చేర్పులు ==\\n# two\\n';
+		const input = '== తాజా చేర్పులు ==\n# one\n== తాజా చేర్పులు ==\n# two\n';
 		expect(addAfDLatestAddition(input, 'Discussion')).toEqual({
 			ok: false,
 			reason: 'anchor-ambiguous',
