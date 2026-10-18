@@ -743,7 +743,11 @@ class Afd extends XfdMode {
 	}
 
 	getNotifyText(): string {
-		return getAfDNotificationText(Morebits.pageNameNorm, this.params.discussionpage);
+		return getAfDNotificationText(
+			Morebits.pageNameNorm,
+			this.params.discussionpage,
+			this.params.afdTagOutcome
+		);
 	}
 
 	getNotifyEditSummary(): string {
