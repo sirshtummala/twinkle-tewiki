@@ -1,5 +1,5 @@
 import {
-	addAfDArticleTagText,
+	getAfDArticleTagText,
 	addAfDLatestAddition,
 	getAfDDiscussionTitle,
 	getAfDNotificationText,
