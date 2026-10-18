@@ -307,3 +307,61 @@ describe('Tewiki live AfD list fixture', () => {
 		});
 	});
 });
+
+
+describe('AfD save-failure safety', () => {
+	test.each([
+		['discussion-page save', 'createDiscussionPage'],
+		['main AfD list save', 'addToList'],
+	])('%s failure prevents article tagging', async (_label, failingTaskName) => {
+		require('twinkle-core/morebits/morebits.js');
+		const Morebits = (window as any).Morebits;
+		const taskManager = new Morebits.taskManager();
+		const createDiscussionPage = jest.fn(() =>
+			failingTaskName === 'createDiscussionPage'
+				? $.Deferred().reject(new Error('discussion save failed'))
+				: $.Deferred().resolve()
+		);
+		const addToList = jest.fn(() =>
+			failingTaskName === 'addToList'
+				? $.Deferred().reject(new Error('main AfD list save failed'))
+				: $.Deferred().resolve()
+		);
+		const tagPage = jest.fn(() => $.Deferred().resolve());
+		const tasks = [
+			[createDiscussionPage, []],
+			[addToList, [createDiscussionPage]],
+			[tagPage, [createDiscussionPage, addToList]],
+		] as const;
+		let tagFailureSignalled: (() => void) | undefined;
+		const tagFailure = new Promise<void>((resolve) => {
+			tagFailureSignalled = resolve;
+		});
+
+		for (const [task, dependencies] of tasks) {
+			taskManager.add(
+				task,
+				[...dependencies],
+				makeTaskFailureHandler(
+					taskManager,
+					task,
+					task === tagPage ? () => tagFailureSignalled?.() : undefined
+				)
+			);
+		}
+
+		const execution = taskManager.execute();
+		await expect(
+			new Promise((resolve, reject) => execution.then(resolve, reject))
+		).rejects.toThrow();
+		await tagFailure;
+
+		expect(tagPage).not.toHaveBeenCalled();
+		if (failingTaskName === 'createDiscussionPage') {
+			expect(addToList).not.toHaveBeenCalled();
+		} else {
+			expect(createDiscussionPage).toHaveBeenCalledTimes(1);
+			expect(addToList).toHaveBeenCalledTimes(1);
+		}
+	});
+});
