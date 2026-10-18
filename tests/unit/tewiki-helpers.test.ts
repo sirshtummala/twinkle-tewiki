@@ -19,7 +19,7 @@ describe('Telugu Wikipedia AfD helpers', () => {
 		const request = getAfDEditRequestText(
 			'Example article',
 			'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article',
-			'{{subst:afd|help=off}}\\n'
+			'{{subst:afd|help=off}}\n'
 		);
 		expect(request).toContain('వ్యాసం [[:Example article]]');
 		expect(request).toContain('[[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article]]');
