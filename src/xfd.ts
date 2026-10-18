@@ -2,7 +2,7 @@ import { getPref, Page, Api, PreferenceGroup, Preference, Config } from './core'
 import { addNs, makeTemplate, obj_entries, stripNs } from './utils';
 import { XfdCore, XfdMode } from './core';
 import { makeFindSourcesDiv, hatnoteRegex } from './common';
-import { addAfDLatestAddition, getAfDNotificationText, makeTaskFailureHandler, shouldMarkAfDArticleAsPatrolled } from './tewiki-helpers';
+import { addAfDLatestAddition, getAfDNotificationText, getAfDEditRequestText, makeTaskFailureHandler, shouldMarkAfDArticleAsPatrolled } from './tewiki-helpers';
 import { mapDestination, tewikiDeletionWorkflow } from './tewiki-config';
 
 class Afd extends XfdMode {
@@ -555,6 +555,31 @@ class Afd extends XfdMode {
 				}
 			}
 			return pageobj;
+		});
+	}
+
+	/**
+	 * Use a Telugu-native talk-page request instead of the English Wikipedia
+	 * {{Xfd edit protected}} template, which has not been confirmed on tewiki.
+	 */
+	autoEditRequest(pageobj: Page) {
+		const params = this.params;
+		const talkName = new mw.Title(pageobj.getPageName()).getTalkPage().toText();
+		if (talkName === pageobj.getPageName()) {
+			pageobj.getStatusElement().error('Page protected and nowhere to add an edit request, aborting');
+			return $.Deferred().reject();
+		}
+		pageobj.getStatusElement().warn('Could not tag the article directly; posting a Telugu edit request on its talk page.');
+		const requestText = getAfDEditRequestText(pageobj.getPageName(), params.discussionpage, params.tagText);
+		const talkPage = new Page(talkName, 'Posting Telugu edit request for protected article');
+		talkPage.setNewSectionTitle('తొలగింపు మూసను చేర్చవలసిందిగా అభ్యర్థన');
+		talkPage.setNewSectionText(requestText);
+		talkPage.setCreateOption('recreate');
+		talkPage.setWatchlist(getPref('xfdWatchPage'));
+		talkPage.setFollowRedirect(true);
+		return talkPage.newSection().catch(function () {
+			talkPage.getStatusElement().warn('The talk-page edit request could not be posted.');
+			return $.Deferred().reject();
 		});
 	}
 
