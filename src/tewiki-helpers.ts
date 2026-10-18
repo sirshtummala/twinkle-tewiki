@@ -33,6 +33,15 @@ export function getAfDNotificationText(
 	return `\nమీరు సృష్టించిన [[:${articleTitle}]] వ్యాసాన్ని తొలగింపు చర్చకు ప్రతిపాదించారు. దయచేసి [[${discussionTitle}]] చర్చలో పాల్గొనండి. ~~~~`;
 }
 
+/**
+ * Build a plain Telugu talk-page edit request for a protected article.
+ * This deliberately avoids relying on the English Wikipedia-specific
+ * {{Xfd edit protected}} template being available on tewiki.
+ */
+export function getAfDEditRequestText(articleTitle: string, discussionTitle: string, tagText: string): string {
+	return `వ్యాసం [[:${articleTitle}]] తొలగింపు చర్చకు ప్రతిపాదించబడింది: [[${discussionTitle}]]. Twinkle ద్వారా వ్యాసంలో నేరుగా తొలగింపు మూసను చేర్చలేకపోయాం. దయచేసి వ్యాసం పైభాగంలో ఈ మూసను చేర్చండి:\n\n<nowiki>${tagText.trim()}</nowiki>\n\nధన్యవాదాలు. ~~~~`;
+}
+
 /** A talk-page edit request is not proof that the article itself was tagged. */
 export function shouldMarkAfDArticleAsPatrolled(tagOutcome: 'tagged' | 'edit-request' | undefined): boolean {
 	return tagOutcome === 'tagged';
