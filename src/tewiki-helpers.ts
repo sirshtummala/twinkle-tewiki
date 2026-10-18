@@ -26,6 +26,11 @@ export function getAfDNotificationText(articleTitle: string, discussionTitle: st
 	return `\nమీరు సృష్టించిన [[:${articleTitle}]] వ్యాసాన్ని తొలగింపు చర్చకు ప్రతిపాదించారు. దయచేసి [[${discussionTitle}]] చర్చలో పాల్గొనండి. ~~~~`;
 }
 
+/** A talk-page edit request is not proof that the article itself was tagged. */
+export function shouldMarkAfDArticleAsPatrolled(tagOutcome: 'tagged' | 'edit-request' | undefined): boolean {
+	return tagOutcome === 'tagged';
+}
+
 /**
  * Add a nomination link to the uniquely identified latest-additions section.
  *
