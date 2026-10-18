@@ -1,5 +1,6 @@
 import { Api, makeOptoutLink, Page, Twinkle, TwinkleModule, getPref } from './core';
 import { hatnoteRegex, makeFindSourcesDiv, optoutTemplates } from './common';
+import { mapDestination } from './tewiki-config';
 
 export class Prod extends TwinkleModule {
 	moduleName = 'prod';
@@ -64,10 +65,10 @@ export class Prod extends TwinkleModule {
 		var form = new Morebits.quickForm(this.evaluate.bind(this));
 
 		if (this.namespace === 'article') {
-			Window.addFooterLink('Proposed deletion policy', 'WP:PROD');
+			Window.addFooterLink('Proposed deletion policy', mapDestination('WP:PROD'));
 			Window.addFooterLink('BLP PROD policy', 'WP:BLPPROD');
 		} else if (this.namespace === 'file') {
-			Window.addFooterLink('Proposed deletion policy', 'WP:PROD');
+			Window.addFooterLink('Proposed deletion policy', mapDestination('WP:PROD'));
 		} else {
 			// if book
 			Window.addFooterLink('Proposed deletion (books) policy', 'WP:BOOKPROD');
@@ -95,7 +96,7 @@ export class Prod extends TwinkleModule {
 					label: 'PROD (proposed deletion)',
 					value: 'prod',
 					checked: true,
-					tooltip: 'Normal proposed deletion, per [[WP:PROD]]',
+					tooltip: 'Normal proposed deletion, per [[' + mapDestination('WP:PROD') + ']]',
 				},
 				{
 					label: 'BLP PROD (proposed deletion of unsourced BLPs)',
@@ -330,7 +331,7 @@ export class Prod extends TwinkleModule {
 						(params.usertalk ? '|help=off' : '') +
 						'}}';
 				} else {
-					summaryText = 'Proposing ' + this.namespace + ' for deletion per [[WP:PROD]].';
+					summaryText = 'Proposing ' + this.namespace + ' for deletion per [[' + mapDestination('WP:PROD') + ']].';
 					tag =
 						'{{subst:prod|1=' +
 						Morebits.string.formatReasonText(params.reason) +
@@ -362,7 +363,9 @@ export class Prod extends TwinkleModule {
 				}
 
 				summaryText =
-					'Endorsing proposed deletion per [[WP:' + (params.blp ? 'BLP' : params.book ? 'BOOK' : '') + 'PROD]].';
+					'Endorsing proposed deletion per [[' +
+					(params.blp ? 'WP:BLPPROD' : params.book ? 'WP:BOOKPROD' : mapDestination('WP:PROD')) +
+					']].';
 				text = text.replace(
 					prod_re,
 					text.match(prod_re) +
@@ -463,7 +466,7 @@ export class Prod extends TwinkleModule {
 		var params = this.params;
 		var usl = new Morebits.userspaceLogger(getPref('prodLogPageName'));
 		usl.initialText =
-			"This is a log of all [[WP:PROD|proposed deletion]] tags applied or endorsed by this user using [[WP:TW|Twinkle]]'s PROD module.\n\n" +
+			"This is a log of all [[" + mapDestination('WP:PROD') + "|proposed deletion]] tags applied or endorsed by this user using [[WP:TW|Twinkle]]'s PROD module.\n\n" +
 			'If you no longer wish to keep this log, you can turn it off using the [[Wikipedia:Twinkle/Preferences|preferences panel]], and ' +
 			'nominate this page for speedy deletion under [[WP:CSD#U1|CSD U1]].\n';
 

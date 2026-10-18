@@ -48,7 +48,7 @@ describe('Tewiki AfD helpers', () => {
 		expect(result.ok).toBe(true);
 		if (result.ok) {
 			expect(result.text).toContain(
-				'{{anchor|latest-additions}}\n* [[' +
+				'{{anchor|latest-additions}}\n# [[' +
 					discussion +
 					']]\nఇక్కడ తాజా చేర్పులు కనిపిస్తాయి.'
 			);
@@ -100,6 +100,10 @@ describe('Tewiki configuration mappings', () => {
 	it('maps confirmed categories and preserves unknown categories', () => {
 		expect(mapCategory('Category:Living people')).toBe('వర్గం:జీవిస్తున్న ప్రజలు');
 		expect(mapCategory('Category:Wikipedia books (user books)')).toBe('Category:Wikipedia books (user books)');
+	});
+
+	it('disables unconfirmed English deletion-sorting destinations', () => {
+		expect(tewikiDeletionWorkflow.updateDeletionSortingLists).toBe(false);
 	});
 
 	it('explicitly disables dated XfD venue logs', () => {

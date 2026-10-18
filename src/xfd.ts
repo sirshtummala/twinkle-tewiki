@@ -2,7 +2,7 @@ import { getPref, Page, Api, PreferenceGroup, Preference, Config } from './core'
 import { addNs, makeTemplate, obj_entries, stripNs } from './utils';
 import { XfdCore, XfdMode } from './core';
 import { makeFindSourcesDiv, hatnoteRegex } from './common';
-import { addAfDLatestAddition } from './tewiki-helpers';
+import { addAfDLatestAddition, getAfDArticleTagText, getAfDNotificationText, getAfDEditRequestText, makeTaskFailureHandler, shouldMarkAfDArticleAsPatrolled } from './tewiki-helpers';
 import { mapDestination, tewikiDeletionWorkflow } from './tewiki-config';
 
 class Afd extends XfdMode {
@@ -413,21 +413,23 @@ class Afd extends XfdMode {
 			'Geographic/Unsorted': ['Islands'],
 		};
 
-		var delsort = this.fieldset.append({
-			type: 'select',
-			multiple: true,
-			name: 'delsortCats',
-			label: 'Choose deletion sorting categories: ',
-			tooltip:
-				'Select a few categories that are specifically relevant to the subject of the article. Be as precise as possible; categories like People and USA should only be used when no other categories apply.',
-		});
-
-		$.each(delsortCategories, function (groupname, list) {
-			var group = delsort.append({ type: 'optgroup', label: groupname });
-			list.forEach(function (item) {
-				group.append({ type: 'option', label: item, value: item });
+		if (tewikiDeletionWorkflow.updateDeletionSortingLists) {
+			var delsort = this.fieldset.append({
+				type: 'select',
+				multiple: true,
+				name: 'delsortCats',
+				label: 'Choose deletion sorting categories: ',
+				tooltip:
+					'Select a few categories that are specifically relevant to the subject of the article. Be as precise as possible; categories like People and USA should only be used when no other categories apply.',
 			});
-		});
+
+			$.each(delsortCategories, function (groupname, list) {
+				var group = delsort.append({ type: 'optgroup', label: groupname });
+				list.forEach(function (item) {
+					group.append({ type: 'option', label: item, value: item });
+				});
+			});
+		}
 
 		this.appendReasonArea();
 		return this.fieldset;
@@ -435,6 +437,11 @@ class Afd extends XfdMode {
 
 	postRender(renderedFieldset: HTMLFieldSetElement) {
 		makeFindSourcesDiv('#twinkle-xfd-findsources');
+
+		// Do not expose English Wikipedia deletion-sorting links on tewiki.
+		if (!tewikiDeletionWorkflow.updateDeletionSortingLists) {
+			return;
+		}
 
 		$(renderedFieldset)
 			.find('[name=delsortCats]')
@@ -475,18 +482,36 @@ class Afd extends XfdMode {
 
 	evaluate() {
 		super.evaluate();
-		this.tm.add(this.checkPage, []);
-		this.tm.add(this.determineDiscussionPage, []);
-		this.tm.add(this.createDiscussionPage, [this.checkPage, this.determineDiscussionPage], this.printReasonText);
+		// twinkle-core 3.1.2 does not reject a dependent task's Deferred when one
+		// of its prerequisites fails. Wrap every AfD task's failure callback so
+		// that failure propagates through the chain and execute() can settle.
+		const addAfdTask = (task: Function, dependencies: Function[], onFailure?: (...args: any[]) => void) => {
+			this.tm.add(
+				task,
+				dependencies,
+				makeTaskFailureHandler(this.tm as any, task, onFailure)
+			);
+		};
+		addAfdTask(this.checkPage, []);
+		addAfdTask(this.determineDiscussionPage, []);
+		addAfdTask(this.preflightLatestAdditions, [this.checkPage, this.determineDiscussionPage]);
+		addAfdTask(
+			this.createDiscussionPage,
+			[this.checkPage, this.determineDiscussionPage, this.preflightLatestAdditions],
+			this.printReasonText
+		);
 		// create discussion page before linking or transcluding it from anywhere, so that
 		// there's no need to do any purging later (#364)
-		this.tm.add(this.tagPage, [this.checkPage, this.createDiscussionPage]); // tagPage has an arg coming from checkPage
-		this.tm.add(this.addToList, [this.createDiscussionPage]);
-		this.tm.add(this.addToDelsortLists, [this.createDiscussionPage]);
-		this.tm.add(this.patrolPage, [this.checkPage]);
-		this.tm.add(this.fetchCreatorInfo, []);
-		this.tm.add(this.notifyCreator, [this.createDiscussionPage, this.fetchCreatorInfo]);
-		this.tm.add(this.addToLog, [this.notifyCreator]);
+		addAfdTask(this.addToList, [this.createDiscussionPage]);
+		// Do not tag the article unless the discussion exists and the main AfD list
+		// was updated (or the nomination was already listed).
+		addAfdTask(this.tagPage, [this.checkPage, this.createDiscussionPage, this.addToList]); // tagPage uses the checkPage result
+
+		addAfdTask(this.addToDelsortLists, [this.createDiscussionPage, this.addToList]);
+		addAfdTask(this.patrolPage, [this.checkPage, this.addToList, this.tagPage]);
+		addAfdTask(this.fetchCreatorInfo, []);
+		addAfdTask(this.notifyCreator, [this.createDiscussionPage, this.addToList, this.tagPage, this.fetchCreatorInfo]);
+		addAfdTask(this.addToLog, [this.notifyCreator]);
 		this.tm.execute().then(() => this.redirectToDiscussion());
 	}
 
@@ -533,15 +558,38 @@ class Afd extends XfdMode {
 		});
 	}
 
+	/**
+	 * Use a Telugu-native talk-page request instead of the English Wikipedia
+	 * {{Xfd edit protected}} template, which has not been confirmed on tewiki.
+	 */
+	autoEditRequest(pageobj: Page) {
+		const params = this.params;
+		const talkName = new mw.Title(pageobj.getPageName()).getTalkPage().toText();
+		if (talkName === pageobj.getPageName()) {
+			pageobj.getStatusElement().error('Page protected and nowhere to add an edit request, aborting');
+			return $.Deferred().reject();
+		}
+		pageobj.getStatusElement().warn('Could not tag the article directly; posting a Telugu edit request on its talk page.');
+		const requestText = getAfDEditRequestText(pageobj.getPageName(), params.discussionpage, params.tagText);
+		const talkPage = new Page(talkName, 'Posting Telugu edit request for protected article');
+		talkPage.setNewSectionTitle('తొలగింపు మూసను చేర్చవలసిందిగా అభ్యర్థన');
+		talkPage.setNewSectionText(requestText);
+		talkPage.setCreateOption('recreate');
+		talkPage.setWatchlist(getPref('xfdWatchPage'));
+		talkPage.setFollowRedirect(true);
+		return talkPage.newSection().catch(function () {
+			talkPage.getStatusElement().warn('The talk-page edit request could not be posted.');
+			return $.Deferred().reject();
+		});
+	}
+
 	tagPage(pageobj) {
 		let params = this.params;
 
-		params.tagText =
-			(params.noinclude ? '<noinclude>{{' : '{{') +
-			(params.number === '' ? 'subst:afd|help=off' : 'subst:afdx|' + params.number + '|help=off') +
-			(params.noinclude ? '}}</noinclude>\n' : '}}\n');
+		params.tagText = getAfDArticleTagText(params.noinclude, params.number);
 
 		if (pageobj.canEdit()) {
+			params.afdTagOutcome = 'tagged';
 			var text = pageobj.getPageText();
 
 			// Remove some tags that should always be removed on AfD.
@@ -568,6 +616,8 @@ class Afd extends XfdMode {
 			pageobj.setCreateOption('nocreate');
 			return pageobj.save();
 		} else {
+			// Posting an edit request does not mean the article itself was tagged.
+			params.afdTagOutcome = 'edit-request';
 			return this.autoEditRequest(pageobj);
 		}
 	}
@@ -580,7 +630,7 @@ class Afd extends XfdMode {
 				pg: Morebits.pageNameNorm,
 				cat: params.xfdcat,
 			}) +
-			params.delsortCats
+			(tewikiDeletionWorkflow.updateDeletionSortingLists ? params.delsortCats : [])
 				.map(function (cat) {
 					return '\n{{subst:delsort|' + cat + '|~~~~}}';
 				})
@@ -597,6 +647,44 @@ class Afd extends XfdMode {
 			pageobj.setWatchlist(getPref('xfdWatchDiscussion'));
 			pageobj.setCreateOption('createonly');
 			return pageobj.save();
+		});
+	}
+
+	/**
+	 * Validate the main Telugu AfD list before creating the discussion page or
+	 * tagging the article. The list is checked again when it is actually saved,
+	 * since another editor may change it between these steps.
+	 */
+	preflightLatestAdditions() {
+		const pageobj = new Page(
+			mapDestination('Wikipedia:Articles for deletion'),
+			'Checking the latest additions list before nomination'
+		);
+		pageobj.setFollowRedirect(true);
+		return pageobj.load().then(() => {
+			const statelem = pageobj.getStatusElement();
+			if (!pageobj.canEdit()) {
+				statelem.error(
+					'You cannot edit the Telugu AfD list; nomination stopped before creating or tagging pages.'
+				);
+				return $.Deferred().reject();
+			}
+			const result = addAfDLatestAddition(
+				pageobj.getPageText(),
+				this.params.discussionpage
+			);
+			if (!result.ok) {
+				const statelem = pageobj.getStatusElement();
+				statelem.error(
+					result.reason === 'anchor-missing'
+						? 'Could not find the latest-additions anchor on the Telugu AfD page; nomination stopped before creating or tagging pages.'
+						: result.reason === 'anchor-ambiguous'
+							? 'The latest-additions anchor is ambiguous on the Telugu AfD page; nomination stopped before creating or tagging pages.'
+							: 'Could not safely identify the end of the latest-additions section; nomination stopped before creating or tagging pages.'
+				);
+				return $.Deferred().reject();
+			}
+			return $.Deferred().resolve();
 		});
 	}
 
@@ -635,6 +723,11 @@ class Afd extends XfdMode {
 	}
 
 	addToDelsortLists() {
+		// TeWiki's deletion-sorting destinations and templates have not been confirmed.
+		// Never write to the English Wikipedia project pages from this workflow.
+		if (!tewikiDeletionWorkflow.updateDeletionSortingLists) {
+			return $.Deferred().resolve();
+		}
 		let params = this.params;
 		let promises = params.delsortCats.map((cat) => {
 			var delsortPage = new Page(
@@ -642,23 +735,29 @@ class Afd extends XfdMode {
 				'Adding to list of ' + cat + '-related deletion discussions'
 			);
 			delsortPage.setFollowRedirect(true); // In case a category gets renamed
-			return delsortPage.load().then(() => {
-				var discussionPage = params.discussionpage;
-				var text = delsortPage
-					.getPageText()
-					.replace('directly below this line -->', 'directly below this line -->\n{{' + discussionPage + '}}');
-				delsortPage.setPageText(text);
-				delsortPage.setEditSummary('Listing [[:' + discussionPage + ']].');
+			return ignoreOptionalTaskFailure(
+				delsortPage.load().then(() => {
+					var discussionPage = params.discussionpage;
+					var text = delsortPage
+						.getPageText()
+						.replace('directly below this line -->', 'directly below this line -->\n{{' + discussionPage + '}}');
+					delsortPage.setPageText(text);
+					delsortPage.setEditSummary('Listing [[:' + discussionPage + ']].');
 
-				delsortPage.setCreateOption('nocreate');
-				return delsortPage.save().catch(function () {}); // failures aren't important
-			});
+					delsortPage.setCreateOption('nocreate');
+					return delsortPage.save();
+				})
+			);
 		});
 
 		return $.when.apply($, promises);
 	}
 
 	patrolPage() {
+		// Only patrol after a successful direct article tag, not after an edit request.
+		if (!shouldMarkAfDArticleAsPatrolled(this.params.afdTagOutcome)) {
+			return $.Deferred().resolve();
+		}
 		if (getPref('markXfdPagesAsPatrolled')) {
 			new Page(Morebits.pageNameNorm).triage();
 		}
@@ -666,11 +765,22 @@ class Afd extends XfdMode {
 	}
 
 	getNotifyText(): string {
+		return getAfDNotificationText(
+			Morebits.pageNameNorm,
+			this.params.discussionpage,
+			this.params.afdTagOutcome
+		);
+	}
+
+	getNotifyEditSummary(): string {
 		return (
-			makeTemplate('subst:afd notice', {
-				1: Morebits.pageNameNorm,
-				order: this.params.numbering ? `|order=&#32;${this.params.numbering}` : '',
-			}) + ' ~~~~'
+			'Notification: [[' +
+			this.params.discussionpage +
+			'|listing]] of [[:' +
+			Morebits.pageNameNorm +
+			']] at [[' +
+			mapDestination('Wikipedia:Articles for deletion') +
+			']].'
 		);
 	}
 }
