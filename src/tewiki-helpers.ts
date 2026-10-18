@@ -18,6 +18,16 @@ export function getAfDDiscussionTitle(articleTitle: string): string {
 }
 
 /**
+ * Build the exact article-side AfD tag used by Tewiki's {{afd}} redirect.
+ * Tewiki's Article for deletion/dated template accepts help=off; the discussion
+ * page itself is created separately with {{subst:afd2}}.
+ */
+export function getAfDArticleTagText(noinclude: boolean, number = ''): string {
+	const template = number === '' ? 'subst:afd|help=off' : `subst:afdx|${number}|help=off`;
+	return noinclude ? `<noinclude>{{${template}}}</noinclude>\n` : `{{${template}}}\n`;
+}
+
+/**
  * Build a creator notice that links directly to the actual tewiki discussion.
  * Avoid the English Wikipedia-specific `afd notice` template, whose link target
  * and numbering conventions have not been confirmed for tewiki.
