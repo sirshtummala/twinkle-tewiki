@@ -22,7 +22,14 @@ export function getAfDDiscussionTitle(articleTitle: string): string {
  * Avoid the English Wikipedia-specific `afd notice` template, whose link target
  * and numbering conventions have not been confirmed for tewiki.
  */
-export function getAfDNotificationText(articleTitle: string, discussionTitle: string): string {
+export function getAfDNotificationText(
+	articleTitle: string,
+	discussionTitle: string,
+	tagOutcome: 'tagged' | 'edit-request' | undefined = 'tagged'
+): string {
+	if (tagOutcome === 'edit-request') {
+		return `\n[[:${articleTitle}]] వ్యాసాన్ని తొలగింపు చర్చకు ప్రతిపాదించారు. అయితే వ్యాసానికి నేరుగా తొలగింపు మూసను చేర్చలేకపోవడంతో, దాని చర్చాపేజీలో సవరణ అభ్యర్థనను ఉంచాం. దయచేసి [[${discussionTitle}]] చర్చలో పాల్గొనండి. ~~~~`;
+	}
 	return `\nమీరు సృష్టించిన [[:${articleTitle}]] వ్యాసాన్ని తొలగింపు చర్చకు ప్రతిపాదించారు. దయచేసి [[${discussionTitle}]] చర్చలో పాల్గొనండి. ~~~~`;
 }
 
