@@ -4,6 +4,7 @@ import {
 	getAfDNotificationText,
 	ignoreOptionalTaskFailure,
 	makeTaskFailureHandler,
+	shouldMarkAfDArticleAsPatrolled,
 } from '../../src/tewiki-helpers';
 
 describe('Telugu Wikipedia AfD helpers', () => {
@@ -133,6 +134,20 @@ describe('Telugu Wikipedia AfD helpers', () => {
 	});
 });
 
+
+describe('AfD patrol safety', () => {
+	test('allows patrol after a direct article tag', () => {
+		expect(shouldMarkAfDArticleAsPatrolled('tagged')).toBe(true);
+	});
+
+	test('does not patrol when only a talk-page edit request was posted', () => {
+		expect(shouldMarkAfDArticleAsPatrolled('edit-request')).toBe(false);
+	});
+
+	test('does not patrol when the tag outcome is unknown', () => {
+		expect(shouldMarkAfDArticleAsPatrolled(undefined)).toBe(false);
+	});
+});
 
 describe('Optional AfD task failures', () => {
 	test('converts an optional task rejection into a resolved promise', async () => {
