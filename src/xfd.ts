@@ -2,7 +2,7 @@ import { getPref, Page, Api, PreferenceGroup, Preference, Config } from './core'
 import { addNs, makeTemplate, obj_entries, stripNs } from './utils';
 import { XfdCore, XfdMode } from './core';
 import { makeFindSourcesDiv, hatnoteRegex } from './common';
-import { addAfDLatestAddition, getAfDNotificationText, makeTaskFailureHandler } from './tewiki-helpers';
+import { addAfDLatestAddition, getAfDNotificationText, makeTaskFailureHandler, shouldMarkAfDArticleAsPatrolled } from './tewiki-helpers';
 import { mapDestination, tewikiDeletionWorkflow } from './tewiki-config';
 
 class Afd extends XfdMode {
@@ -567,6 +567,7 @@ class Afd extends XfdMode {
 			(params.noinclude ? '}}</noinclude>\n' : '}}\n');
 
 		if (pageobj.canEdit()) {
+			params.afdTagOutcome = 'tagged';
 			var text = pageobj.getPageText();
 
 			// Remove some tags that should always be removed on AfD.
@@ -593,6 +594,8 @@ class Afd extends XfdMode {
 			pageobj.setCreateOption('nocreate');
 			return pageobj.save();
 		} else {
+			// Posting an edit request does not mean the article itself was tagged.
+			params.afdTagOutcome = 'edit-request';
 			return this.autoEditRequest(pageobj);
 		}
 	}
@@ -729,6 +732,10 @@ class Afd extends XfdMode {
 	}
 
 	patrolPage() {
+		// Only patrol after a successful direct article tag, not after an edit request.
+		if (!shouldMarkAfDArticleAsPatrolled(this.params.afdTagOutcome)) {
+			return $.Deferred().resolve();
+		}
 		if (getPref('markXfdPagesAsPatrolled')) {
 			new Page(Morebits.pageNameNorm).triage();
 		}
