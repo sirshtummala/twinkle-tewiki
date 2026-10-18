@@ -2,6 +2,7 @@ import {
 	addAfDLatestAddition,
 	getAfDDiscussionTitle,
 	getAfDNotificationText,
+	getAfDEditRequestText,
 	ignoreOptionalTaskFailure,
 	makeTaskFailureHandler,
 	shouldMarkAfDArticleAsPatrolled,
@@ -12,6 +13,18 @@ describe('Telugu Wikipedia AfD helpers', () => {
 		expect(getAfDDiscussionTitle('Example article')).toBe(
 			'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article'
 		);
+	});
+
+	test('protected-article request uses Telugu text and does not depend on an English template', () => {
+		const request = getAfDEditRequestText(
+			'Example article',
+			'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article',
+			'{{subst:afd|help=off}}\\n'
+		);
+		expect(request).toContain('వ్యాసం [[:Example article]]');
+		expect(request).toContain('[[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article]]');
+		expect(request).toContain('<nowiki>{{subst:afd|help=off}}</nowiki>');
+		expect(request).not.toContain('Xfd edit protected');
 	});
 
 	test('creator notice explains when only an edit request was posted', () => {
