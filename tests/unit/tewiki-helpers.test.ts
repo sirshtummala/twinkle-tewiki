@@ -14,6 +14,17 @@ describe('Telugu Wikipedia AfD helpers', () => {
 		);
 	});
 
+	test('creator notice explains when only an edit request was posted', () => {
+		const notice = getAfDNotificationText(
+			'Example article',
+			'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article',
+			'edit-request'
+		);
+		expect(notice).toContain('సవరణ అభ్యర్థనను ఉంచాం');
+		expect(notice).toContain('[[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/Example article]]');
+		expect(notice).not.toContain('మీరు సృష్టించిన');
+	});
+
 	test('creator notice links directly to a numbered Telugu discussion page', () => {
 		expect(
 			getAfDNotificationText(
