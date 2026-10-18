@@ -291,7 +291,7 @@ describe('Tewiki live AfD list fixture', () => {
 			'',
 			'==పాత చర్చలు ==',
 			'Existing archived discussion links stay untouched.',
-		].join('\\n');
+		].join('\n');
 		const result = addAfDLatestAddition(
 			input,
 			'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/కొత్త పరీక్ష వ్యాసం'
@@ -302,7 +302,7 @@ describe('Tewiki live AfD list fixture', () => {
 			alreadyPresent: false,
 			text: input.replace(
 				'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/టాల్ రేడియో]]',
-				'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/టాల్ రేడియో]]\\n# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/కొత్త పరీక్ష వ్యాసం]]'
+				'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/టాల్ రేడియో]]\n# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/కొత్త పరీక్ష వ్యాసం]]'
 			),
 		});
 	});
