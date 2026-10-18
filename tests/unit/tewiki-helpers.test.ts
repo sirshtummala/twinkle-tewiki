@@ -1,4 +1,5 @@
 import {
+	addAfDArticleTagText,
 	addAfDLatestAddition,
 	getAfDDiscussionTitle,
 	getAfDNotificationText,
@@ -264,4 +265,45 @@ describe('AfD task failure propagation', () => {
 		expect(taskManager.deferreds.get(dependent).state()).toBe('rejected');
 	});
 
+});
+
+describe('Tewiki article deletion tag', () => {
+	test('uses the locally supported afd template and disables English help text', () => {
+		expect(getAfDArticleTagText(false)).toBe('{{subst:afd|help=off}}\n');
+	});
+
+	test('preserves the optional noinclude wrapper', () => {
+		expect(getAfDArticleTagText(true)).toBe('<noinclude>{{subst:afd|help=off}}</noinclude>\n');
+	});
+
+	test('uses afdx only when a numbered nomination is explicitly requested', () => {
+		expect(getAfDArticleTagText(false, '2')).toBe('{{subst:afdx|2|help=off}}\n');
+	});
+});
+
+describe('Tewiki live AfD list fixture', () => {
+	test('inserts after the final numbered item in the actual latest-additions markup', () => {
+		const input = [
+			'== <span class="anchor" id="latest-additions"></span> తాజా చేర్పులు ==',
+			'ఈ క్రింది పుటలలోనే కాక ఇంకా ఈ పేజీలో చేరని చర్చా పేజీలను [[:వర్గం:తొలగించవలసిన వ్యాసములు]] లో పరిశీలించండి.',
+			'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/నేతకారుడు]]',
+			'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/టాల్ రేడియో]]',
+			'',
+			'==పాత చర్చలు ==',
+			'Existing archived discussion links stay untouched.',
+		].join('\\n');
+		const result = addAfDLatestAddition(
+			input,
+			'వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/కొత్త పరీక్ష వ్యాసం'
+		);
+
+		expect(result).toEqual({
+			ok: true,
+			alreadyPresent: false,
+			text: input.replace(
+				'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/టాల్ రేడియో]]',
+				'# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/టాల్ రేడియో]]\\n# [[వికీపీడియా:తొలగింపు కొరకు వ్యాసాలు/కొత్త పరీక్ష వ్యాసం]]'
+			),
+		});
+	});
 });
