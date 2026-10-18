@@ -2,7 +2,7 @@ import { getPref, Page, Api, PreferenceGroup, Preference, Config } from './core'
 import { addNs, makeTemplate, obj_entries, stripNs } from './utils';
 import { XfdCore, XfdMode } from './core';
 import { makeFindSourcesDiv, hatnoteRegex } from './common';
-import { addAfDLatestAddition, getAfDNotificationText, getAfDEditRequestText, makeTaskFailureHandler, shouldMarkAfDArticleAsPatrolled } from './tewiki-helpers';
+import { addAfDLatestAddition, getAfDArticleTagText, getAfDNotificationText, getAfDEditRequestText, makeTaskFailureHandler, shouldMarkAfDArticleAsPatrolled } from './tewiki-helpers';
 import { mapDestination, tewikiDeletionWorkflow } from './tewiki-config';
 
 class Afd extends XfdMode {
@@ -586,10 +586,7 @@ class Afd extends XfdMode {
 	tagPage(pageobj) {
 		let params = this.params;
 
-		params.tagText =
-			(params.noinclude ? '<noinclude>{{' : '{{') +
-			(params.number === '' ? 'subst:afd|help=off' : 'subst:afdx|' + params.number + '|help=off') +
-			(params.noinclude ? '}}</noinclude>\n' : '}}\n');
+		params.tagText = getAfDArticleTagText(params.noinclude, params.number);
 
 		if (pageobj.canEdit()) {
 			params.afdTagOutcome = 'tagged';
